@@ -1,0 +1,55 @@
+{
+  "name": "yarn-plugin-aws-codeartifact",
+  "version": "0.0.0",
+  "description": "Yarn v2 plugin that resolves authentication for AWS CodeArtifact NPM registries",
+  "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhassan1/yarn-plugin-aws-codeartifact.git"
+  },
+  "engines": {
+    "yarn": "^2.3.0"
+  },
+  "keywords": [
+    "yarn",
+    "berry",
+    "plugin",
+    "aws",
+    "codeartifact"
+  ],
+  "author": "Marc Hassan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mhassan1/yarn-plugin-aws-codeartifact/issues"
+  },
+  "homepage": "https://github.com/mhassan1/yarn-plugin-aws-codeartifact#readme",
+  "scripts": {
+    "test": "jest --config jestconfig.json",
+    "build": "builder build plugin",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "yarn build",
+    "preversion": "yarn lint",
+    "version": "yarn format && yarn build && git add -A",
+    "postversion": "git push && git push --tags"
+  },
+  "dependencies": {
+    "@aws-sdk/client-codeartifact": "^1.0.0-rc.7",
+    "@types/node": "^14.0.0",
+    "@yarnpkg/builder": "^2.1.3",
+    "@yarnpkg/core": "^2.4.0",
+    "@yarnpkg/plugin-npm": "^2.4.0",
+    "clipanion": "^2.6.2",
+    "typescript": "^3.9.5",
+    "yargs-parser": "^18.1.3"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.13",
+    "codecov": "^3.7.2",
+    "jest": "^26.4.2",
+    "prettier": "^2.1.1",
+    "ts-jest": "^26.3.0",
+    "tslint": "^6.1.3",
+    "tslint-config-prettier": "^1.18.0"
+  }
+}
