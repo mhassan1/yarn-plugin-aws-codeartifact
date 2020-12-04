@@ -103,16 +103,16 @@ const getAuthorizationToken = async ({
 };
 
 /**
- * Command to provide info about this plugin
+ * Command to provide the version of this plugin
  */
-class InfoCommand extends Command<CommandContext> {
-  @Command.Path("plugin", "info", "aws-codeartifact")
+class VersionCommand extends Command<CommandContext> {
+  @Command.Path("plugin-aws-codeartifact", "version")
   async execute() {
-    this.context.stdout.write(`Version: ${version}\n`);
+    this.context.stdout.write(`${version}\n`);
   }
 }
 
 const plugin: Plugin = {
-  commands: [InfoCommand],
+  commands: [VersionCommand],
 };
 export default plugin;

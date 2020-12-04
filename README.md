@@ -8,7 +8,7 @@ This is a Yarn v2 plugin that resolves authentication for AWS CodeArtifact NPM r
 yarn plugin import https://raw.githubusercontent.com/mhassan1/yarn-plugin-aws-codeartifact/main/bundles/@yarnpkg/plugin-aws-codeartifact.js
 ```
 
-See the currently installed version by running `yarn plugin info aws-codeartifact`.
+See the currently installed version by running `yarn plugin-aws-codeartifact version`.
 
 ## Usage
 
