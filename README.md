@@ -18,8 +18,18 @@ See the currently installed version by running `yarn plugin-aws-codeartifact ver
 npmRegistryServer: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
 # OR
 npmPublishRegistry: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
+# OR
+npmRegistries:
+  //domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/: {}
+# OR
+npmScopes:
+  my-scope:
+    npmRegistryServer: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
+    # OR
+    npmPublishRegistry: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
 ```
-NOTE: `npmRegistries`, `npmScopes`, and `publishConfig.registry` are not supported by this plugin and will be ignored.
+NOTE: If `publishConfig.registry` is specified in `package.json`,
+you must also specify that registry in `npmRegistries` in `.yarnrc.yml`.
 
 3. Run `yarn` commands.
 
