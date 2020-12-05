@@ -23,6 +23,14 @@ NOTE: `npmRegistries`, `npmScopes`, and `publishConfig.registry` are not support
 
 3. Run `yarn` commands.
 
+## Migration
+
+To migrate an existing `yarn.lock` file from NPM to AWS CodeArtifact,
+run `yarn plugin-aws-codeartifact migrate`, then `yarn`.
+
+The `migrate` command itself only modifies the `yarn.lock` file.
+To verify the lock file updates and to download the packages from the AWS CodeArtifact registry, run `yarn`.
+
 ## How It Works
 
 This plugin hooks into Yarn v2 so that any `yarn` commands that may require fetching or publishing packages

@@ -1,0 +1,18 @@
+__metadata:
+  version: 4
+  cacheKey: 7
+
+"is-promise@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "is-promise@npm:4.0.0::__archiveUrl=https%3A%2F%2Fdomain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com%3A443%2Fnpm%2Frepo-test%2Fis-promise%2F-%2Fis-promise-4.0.0.tgz"
+  checksum: 7085bdc4eaff389c5730a1d54f014880e90ca1e4b7f0a49de9f3c5f5d2fb9e0c3a878ac226d3aa9190bfe4a78400e66d911427ef4812455756293cdb02fb05cf
+  languageName: node
+  linkType: hard
+
+"root-workspace-0b6124@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "root-workspace-0b6124@workspace:."
+  dependencies:
+    is-promise: ^4.0.0
+  languageName: unknown
+  linkType: soft
