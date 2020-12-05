@@ -1,4 +1,4 @@
-import { computeMigratedLocator } from "../../migrate";
+import { computeMigratedLocator } from "../../commands/migrate";
 import { structUtils } from "@yarnpkg/core";
 
 describe("computeMigratedLocator", () => {

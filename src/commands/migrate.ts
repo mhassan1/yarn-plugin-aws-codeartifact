@@ -1,14 +1,40 @@
+import { Command } from "clipanion";
 import {
   Configuration,
   StreamReport,
+  CommandContext,
   Locator,
   structUtils,
 } from "@yarnpkg/core";
 import { ppath, xfs } from "@yarnpkg/fslib";
 import { parseSyml, stringifySyml } from "@yarnpkg/parsers";
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
-import { parseRegistryUrl } from "./utils";
+import { parseRegistryUrl } from "../utils";
 import URL from "url";
+
+/**
+ * Command to migrate a `yarn.lock` file to use the AWS CodeArtifact repository for all packages
+ */
+export class MigrateCommand extends Command<CommandContext> {
+  @Command.Path("plugin-aws-codeartifact", "migrate")
+  async execute() {
+    const configuration = await Configuration.find(
+      this.context.cwd,
+      this.context.plugins
+    );
+    const streamReport = await StreamReport.start(
+      {
+        configuration,
+        stdout: this.context.stdout,
+      },
+      async (report) => {
+        await migrateLockFile({ configuration, report });
+      }
+    );
+
+    return streamReport.exitCode();
+  }
+}
 
 type LockFileEntry = {
   resolution: string;
@@ -21,8 +47,9 @@ const NPM_PROTOCOL = "npm:";
  *
  * @param {Configuration} configuration
  * @param {StreamReport} report
+ * @returns {Promise<void>}
  */
-export const migrateLockFile = async ({
+const migrateLockFile = async ({
   configuration,
   report,
 }: {
@@ -78,7 +105,7 @@ export const migrateLockFile = async ({
  * @param {string} resolution
  * @returns {{Locator} oldLocator, {Locator} newLocator}
  */
-export const resolveLockfileEntry = (
+const resolveLockfileEntry = (
   configuration: Configuration,
   resolution: string
 ): { oldLocator: Locator; newLocator: Locator } | null => {
