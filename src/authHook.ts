@@ -61,10 +61,7 @@ const getAuthorizationToken = async ({
 }: AuthorizationTokenParams): Promise<string> => {
   // for testing purposes only
   if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
-    const mockToken = [domain, domainOwner, region].join("~");
-    // tslint:disable-next-line:no-console
-    console.log(`TESTING~~~${mockToken}~~~TESTING`);
-    return mockToken;
+    return ["~~", domain, domainOwner, region, "~~"].join("~");
   }
 
   const client = new Codeartifact({ region });
@@ -178,6 +175,7 @@ const maybeSetAuthorizationTokenForRegistry = async (
     );
 
     if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG) {
+      // TODO use a LightReport to write this to STDOUT, being careful to check for the `--json` flag from the user
       // tslint:disable-next-line:no-console
       console.log(
         `_YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG: Setting token for registry ${registry} to ${authorizationToken}`

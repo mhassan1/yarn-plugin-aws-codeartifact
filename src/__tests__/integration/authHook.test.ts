@@ -1,7 +1,12 @@
 import { execSync } from "child_process";
 import { join } from "path";
 
-const env = { ...process.env, _YARN_PLUGIN_AWS_CODEARTIFACT_TESTING: "true" };
+const env = {
+  ...process.env,
+  _YARN_PLUGIN_AWS_CODEARTIFACT_TESTING: "true",
+  _YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG: "true",
+};
+const expectedRegex = /Setting token for registry .+ to ~~~domain-test~000000000000~us-east-1~~~/;
 
 describe("commands that require a registry", () => {
   it("should retrieve authorization tokens for AWS CodeArtifact registries", () => {
@@ -12,9 +17,7 @@ describe("commands that require a registry", () => {
       cwd,
       env,
     }).toString();
-    expect(stdout).toMatch(
-      /TESTING~~~domain-test~000000000000~us-east-1~~~TESTING/
-    );
+    expect(stdout).toMatch(expectedRegex);
   });
 
   it("should not retrieve authorization tokens for non-AWS CodeArtifact registries", () => {
@@ -24,9 +27,7 @@ describe("commands that require a registry", () => {
       cwd,
       env,
     }).toString();
-    expect(stdout).not.toMatch(
-      /TESTING~~~domain-test~000000000000~us-east-1~~~TESTING/
-    );
+    expect(stdout).not.toMatch(expectedRegex);
   });
 });
 
@@ -37,8 +38,6 @@ describe("commands that don't require a registry", () => {
       cwd,
       env,
     }).toString();
-    expect(stdout).not.toMatch(
-      /TESTING~~~domain-test~000000000000~us-east-1~~~TESTING/
-    );
+    expect(stdout).not.toMatch(expectedRegex);
   });
 });
