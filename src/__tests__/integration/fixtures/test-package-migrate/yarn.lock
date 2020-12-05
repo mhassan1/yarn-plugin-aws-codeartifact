@@ -2,6 +2,13 @@ __metadata:
   version: 4
   cacheKey: 7
 
+"@types/emscripten@npm:^1.38.0":
+  version: 1.39.4
+  resolution: "@types/emscripten@npm:1.39.4::__archiveUrl=https%3A%2F%2Fdomain-test-111111111111.d.codeartifact.us-east-1.amazonaws.com%3A443%2Fnpm%2Frepo-test%2F%40types%2Femscripten%2F-%2Femscripten-1.39.4.tgz"
+  checksum: b848421e2597a0ce56b74c6427f843cfd8f26dec8eaaa1929317e9417bc06eaa934057c317cbb561ade2f5462b6906e37868608211e09f9f507dca62066795a8
+  languageName: node
+  linkType: hard
+
 "is-promise@npm:^4.0.0":
   version: 4.0.0
   resolution: "is-promise@npm:4.0.0::__archiveUrl=https%3A%2F%2Fdomain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com%3A443%2Fnpm%2Frepo-test%2Fis-promise%2F-%2Fis-promise-4.0.0.tgz"

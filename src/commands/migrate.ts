@@ -13,7 +13,7 @@ import { parseRegistryUrl } from "../utils";
 import URL from "url";
 
 /**
- * Command to migrate a `yarn.lock` file to use the AWS CodeArtifact repository for all packages
+ * Command to migrate a `yarn.lock` file to use AWS CodeArtifact repositories for relevant packages
  */
 export class MigrateCommand extends Command<CommandContext> {
   @Command.Path("plugin-aws-codeartifact", "migrate")
@@ -43,7 +43,7 @@ type LockFileEntry = {
 const NPM_PROTOCOL = "npm:";
 
 /**
- * Modify the lockfile so that all packages resolve from AWS CodeArtifact
+ * Modify the lockfile so that relevant packages resolve from AWS CodeArtifact
  *
  * @param {Configuration} configuration
  * @param {StreamReport} report
@@ -111,7 +111,9 @@ const resolveLockfileEntry = (
 ): { oldLocator: Locator; newLocator: Locator } | null => {
   const oldLocator = structUtils.parseLocator(resolution);
 
-  const registry = npmConfigUtils.getDefaultRegistry({ configuration });
+  const registry = npmConfigUtils.getScopeRegistry(oldLocator.scope, {
+    configuration,
+  });
 
   // if this entry is not related to an AWS CodeArtifact registry, skip it
   const parsedRegistry = parseRegistryUrl(registry);
