@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.0] - 2020-12-08
+[0.3.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.2.0...v0.3.0
+
+- Remove `version` command in favor of updating README installation link
+
 ## [0.2.0] - 2020-12-05
 [0.2.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.1.0...v0.2.0
 

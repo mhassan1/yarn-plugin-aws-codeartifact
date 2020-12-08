@@ -30,7 +30,7 @@
     "lint": "tslint -p tsconfig.json",
     "prepare": "yarn build",
     "preversion": "yarn lint",
-    "version": "yarn format && yarn build && git add -A",
+    "version": "yarn format && yarn build && sed -Ei '' \"s/(yarn-plugin-aws-codeartifact\\/).+(\\/bundles)/\\1v$npm_package_version\\2/g\" README.md && git add -A",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
