@@ -76,6 +76,9 @@ export const registryCommands: RegistryCommand[] = [
     positionalArgs: ["remove"],
   },
   {
+    positionalArgs: ["search"],
+  },
+  {
     positionalArgs: ["set", "resolution"],
   },
   {
@@ -83,6 +86,9 @@ export const registryCommands: RegistryCommand[] = [
   },
   {
     positionalArgs: ["up"],
+  },
+  {
+    positionalArgs: ["upgrade-interactive"],
   },
   {
     positionalArgs: ["workspace"],

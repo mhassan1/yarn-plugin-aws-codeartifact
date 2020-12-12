@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2020-12-11
+[0.4.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.3.0...v0.4.0
+
+- Add `upgrade-interactive` and `search` to list of registry commands
+
 ## [0.3.0] - 2020-12-08
 [0.3.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.2.0...v0.3.0
 
