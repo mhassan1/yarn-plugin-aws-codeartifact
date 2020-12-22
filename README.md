@@ -13,6 +13,8 @@ yarn plugin import https://raw.githubusercontent.com/mhassan1/yarn-plugin-aws-co
 1. Configure [AWS SDK credentials](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html).
 2. Put the AWS CodeArtifact Registry URL in `.yarnrc.yml`:
 ```yaml
+# .yarnrc.yml
+
 npmRegistryServer: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
 # OR
 npmPublishRegistry: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
@@ -30,6 +32,38 @@ NOTE: If `publishConfig.registry` is specified in `package.json`,
 you must also specify that registry in `npmRegistries` in `.yarnrc.yml`.
 
 3. Run `yarn` commands.
+
+### AWS Profiles
+
+If you have configured multiple [AWS Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html),
+(e.g. in an AWS credentials file like `~/.aws/credentials` (Linux & Mac) or `%USERPROFILE%\.aws\credentials` (Windows))
+you can specify the profile to use by specifying the `AWS_PROFILE` environment variable.
+
+For more fine-grained control, you can add a `.yarn-plugin-aws-codeartifact.yml` configuration file
+in your project directory, any parent directory, or the home directory (similar to `.yarnrc.yml`):
+```yaml
+# .yarn-plugin-aws-codeartifact.yml
+
+npmRegistryServerConfig:
+  awsProfile: my-profile
+# OR
+npmPublishRegistryConfig:
+  awsProfile: my-profile
+# OR
+npmRegistries:
+  //domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/:
+    awsProfile: my-profile
+# OR
+npmScopes:
+  my-scope:
+    npmRegistryServerConfig:
+      awsProfile: my-profile
+    # OR
+    npmPublishRegistryConfig:
+      awsProfile: my-profile
+```
+NOTE: An `awsProfile` value (including `''`, which is equivalent to `default`) will override the `AWS_PROFILE` environment variable;
+otherwise, the `AWS_PROFILE` environment variable will be used (or if it is unset, the default profile will be used).
 
 ## Migration
 
