@@ -1,0 +1,2 @@
+npmRegistryServerConfig:
+  awsProfile: aws-profile-1

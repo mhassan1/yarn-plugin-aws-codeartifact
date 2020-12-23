@@ -1,32 +1,45 @@
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
 import { maybeSetAuthorizationTokensForRegistries } from "../../authHook";
 import { Configuration } from "@yarnpkg/core";
+import { AuthorizationTokenParams, PluginRegistryConfig } from "../../utils";
 
 const { FETCH_REGISTRY, PUBLISH_REGISTRY } = npmConfigUtils.RegistryType;
 const NPM_AUTH_TOKEN = "npmAuthToken";
 const NPM_ALWAYS_AUTH = "npmAlwaysAuth";
 
-const awsCodeArtifactRegistryFactory = (i) =>
+const awsCodeArtifactRegistryFactory = (i: number) =>
   `https://domain-test-00000000000${i}.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/`;
 
-let tokenGeneratorCallCount;
-const tokenGenerator = async ({ domainOwner }) => {
+let tokenGeneratorCallCount: number;
+const tokenGenerator = async (
+  authorizationTokenParams: AuthorizationTokenParams,
+  pluginRegistryConfig: PluginRegistryConfig | null
+) => {
+  const { domainOwner } = authorizationTokenParams;
+  const { awsProfile = null } = pluginRegistryConfig || {};
   tokenGeneratorCallCount++;
-  const i = domainOwner.slice(-1)[0];
+  const i = Number(domainOwner.slice(-1)[0]);
   if (i === 4)
     throw new Error("awsCodeArtifactRegistry4 should never be called");
-  return `test-token-${i}`;
+  return `test-token-${i}-${awsProfile}`;
 };
 
 describe("maybeSetAuthorizationTokensForRegistries", () => {
   it.each([
+    // 3 times:
+    // - `npmRegistryServer -> awsCodeArtifactRegistry1`
+    // - `npmRegistries -> awsCodeArtifactRegistry2`
+    // - `npmScopes (scope-a, aws-profile-7) -> awsCodeArtifactRegistry3`
     [FETCH_REGISTRY, 3],
-    [PUBLISH_REGISTRY, 0],
+    // 1 time:
+    // - `npmScopes (scope-a, no profile) -> awsCodeArtifactRegistry3`
+    [PUBLISH_REGISTRY, 1],
   ])(
     "should set the full registry configuration : %p",
     async (registryType, expectedTokenGeneratorCallCount) => {
       tokenGeneratorCallCount = 0;
       const configuration = {
+        startingCwd: __dirname,
         get(key: string) {
           if (!this.values.has(key))
             throw new Error(`Invalid configuration key "${key}"`);
@@ -77,7 +90,9 @@ describe("maybeSetAuthorizationTokensForRegistries", () => {
         tokenGenerator
       );
 
-      expect(configuration.values.get(NPM_AUTH_TOKEN)).toBe("test-token-1");
+      expect(configuration.values.get(NPM_AUTH_TOKEN)).toBe(
+        "test-token-1-null"
+      );
       expect(configuration.values.get(NPM_ALWAYS_AUTH)).toBe(true);
 
       expect(
@@ -85,7 +100,7 @@ describe("maybeSetAuthorizationTokensForRegistries", () => {
           .get("npmRegistries")
           .get(awsCodeArtifactRegistry2)
           .get(NPM_AUTH_TOKEN)
-      ).toBe("test-token-2");
+      ).toBe("test-token-2-null");
       expect(
         configuration.values
           .get("npmRegistries")
@@ -97,7 +112,7 @@ describe("maybeSetAuthorizationTokensForRegistries", () => {
           .get("npmRegistries")
           .get(awsCodeArtifactRegistry2.slice(6))
           .get(NPM_AUTH_TOKEN)
-      ).toBe("test-token-2");
+      ).toBe("test-token-2-null");
       expect(
         configuration.values
           .get("npmRegistries")
@@ -109,7 +124,7 @@ describe("maybeSetAuthorizationTokensForRegistries", () => {
           .get("npmRegistries")
           .get(awsCodeArtifactRegistry2.slice(0, -1))
           .get(NPM_AUTH_TOKEN)
-      ).toBe("test-token-2");
+      ).toBe("test-token-2-null");
       expect(
         configuration.values
           .get("npmRegistries")
@@ -143,7 +158,11 @@ describe("maybeSetAuthorizationTokensForRegistries", () => {
 
       expect(
         configuration.values.get("npmScopes").get("scope-a").get(NPM_AUTH_TOKEN)
-      ).toBe("test-token-3");
+      ).toBe(
+        `test-token-3-${
+          registryType === FETCH_REGISTRY ? "aws-profile-7" : null
+        }`
+      );
       expect(
         configuration.values
           .get("npmScopes")

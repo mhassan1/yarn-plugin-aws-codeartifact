@@ -1,9 +1,16 @@
+import { PortablePath } from "@yarnpkg/fslib";
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
 import {
   getRegistryTypeForCommand,
   arrayStartsWith,
   parseRegistryUrl,
+  buildPluginConfig,
+  PluginConfig,
+  getDefaultPluginRegistryConfig,
+  getPluginRegistryConfig,
+  getScopePluginRegistryConfig,
 } from "../../utils";
+import { join } from "path";
 
 const { FETCH_REGISTRY, PUBLISH_REGISTRY } = npmConfigUtils.RegistryType;
 
@@ -67,4 +74,135 @@ describe("parseRegistryUrl", () => {
       expect(parseRegistryUrl(registryUrl)).toStrictEqual(expected);
     }
   );
+});
+
+describe("buildPluginConfig", () => {
+  it("should build plugin config", async () => {
+    const pluginConfig = await buildPluginConfig(
+      join(
+        __dirname,
+        "..",
+        "integration",
+        "fixtures",
+        "test-package"
+      ) as PortablePath
+    );
+    expect(pluginConfig).toStrictEqual({
+      npmRegistryServerConfig: {
+        awsProfile: "aws-profile-1",
+      },
+      npmPublishRegistryConfig: {
+        awsProfile: "aws-profile-2",
+      },
+    });
+  });
+});
+
+describe("getDefaultPluginRegistryConfig", () => {
+  it("should get default plugin registry config", async () => {
+    const pluginConfig = {
+      npmRegistryServerConfig: {
+        awsProfile: "aws-profile-1",
+      },
+      npmPublishRegistryConfig: {
+        awsProfile: "aws-profile-2",
+      },
+    } as PluginConfig;
+    expect(
+      getDefaultPluginRegistryConfig(pluginConfig, FETCH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-1",
+    });
+    expect(
+      getDefaultPluginRegistryConfig(pluginConfig, PUBLISH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-2",
+    });
+  });
+
+  it("should fall back to FETCH_REGISTRY plugin config", async () => {
+    const pluginConfig = {
+      npmRegistryServerConfig: {
+        awsProfile: "aws-profile-1",
+      },
+    } as PluginConfig;
+    expect(
+      getDefaultPluginRegistryConfig(pluginConfig, PUBLISH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-1",
+    });
+    expect(
+      getDefaultPluginRegistryConfig({} as PluginConfig, PUBLISH_REGISTRY)
+    ).toStrictEqual(null);
+  });
+});
+
+describe("getPluginRegistryConfig", () => {
+  it("should get plugin registry config from `npmRegistries`", async () => {
+    const pluginConfig = {
+      npmRegistries: {
+        "//y.com": {
+          awsProfile: "aws-profile-4",
+        },
+      },
+    } as PluginConfig;
+    expect(getPluginRegistryConfig("//y.com", pluginConfig)).toStrictEqual({
+      awsProfile: "aws-profile-4",
+    });
+  });
+});
+
+describe("getScopePluginRegistryConfig", () => {
+  it("should get scope plugin registry config", async () => {
+    const pluginConfig = {
+      npmScopes: {
+        "scope-z": {
+          npmRegistryServerConfig: {
+            awsProfile: "aws-profile-5",
+          },
+          npmPublishRegistryConfig: {
+            awsProfile: "aws-profile-6",
+          },
+        },
+      },
+    } as PluginConfig;
+    expect(
+      getScopePluginRegistryConfig("scope-z", pluginConfig, FETCH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-5",
+    });
+    expect(
+      getScopePluginRegistryConfig("scope-z", pluginConfig, PUBLISH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-6",
+    });
+  });
+
+  it("should fall back to default plugin registry config", async () => {
+    const pluginConfig = {
+      npmRegistryServerConfig: {
+        awsProfile: "aws-profile-1",
+      },
+      npmPublishRegistryConfig: {
+        awsProfile: "aws-profile-2",
+      },
+    } as PluginConfig;
+    expect(
+      getScopePluginRegistryConfig("scope-z", pluginConfig, FETCH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-1",
+    });
+    expect(
+      getScopePluginRegistryConfig("scope-z", pluginConfig, PUBLISH_REGISTRY)
+    ).toStrictEqual({
+      awsProfile: "aws-profile-2",
+    });
+    expect(
+      getScopePluginRegistryConfig(
+        "scope-z",
+        {} as PluginConfig,
+        PUBLISH_REGISTRY
+      )
+    ).toStrictEqual(null);
+  });
 });
