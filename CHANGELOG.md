@@ -3,6 +3,7 @@
 ## [0.5.0] - 2020-12-23
 [0.5.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.4.0...v0.5.0
 
+- Bump dependencies
 - Add support for multiple AWS profiles via `.yarn-plugin-aws-codeartifact.yml` configuration files
 
 ## [0.4.0] - 2020-12-11
