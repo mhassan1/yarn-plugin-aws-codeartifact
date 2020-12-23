@@ -1,19 +1,24 @@
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
 import { maybeSetAuthorizationTokensForRegistries } from "../../authHook";
 import { Configuration } from "@yarnpkg/core";
+import { AuthorizationTokenParams, PluginRegistryConfig } from "../../utils";
 
 const { FETCH_REGISTRY, PUBLISH_REGISTRY } = npmConfigUtils.RegistryType;
 const NPM_AUTH_TOKEN = "npmAuthToken";
 const NPM_ALWAYS_AUTH = "npmAlwaysAuth";
 
-const awsCodeArtifactRegistryFactory = (i) =>
+const awsCodeArtifactRegistryFactory = (i: number) =>
   `https://domain-test-00000000000${i}.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/`;
 
-let tokenGeneratorCallCount;
-const tokenGenerator = async ({ domainOwner }, pluginRegistryConfig) => {
+let tokenGeneratorCallCount: number;
+const tokenGenerator = async (
+  authorizationTokenParams: AuthorizationTokenParams,
+  pluginRegistryConfig: PluginRegistryConfig | null
+) => {
+  const { domainOwner } = authorizationTokenParams;
   const { awsProfile = null } = pluginRegistryConfig || {};
   tokenGeneratorCallCount++;
-  const i = domainOwner.slice(-1)[0];
+  const i = Number(domainOwner.slice(-1)[0]);
   if (i === 4)
     throw new Error("awsCodeArtifactRegistry4 should never be called");
   return `test-token-${i}-${awsProfile}`;

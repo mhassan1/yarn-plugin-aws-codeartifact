@@ -17,7 +17,7 @@ import URL from "url";
  */
 export class MigrateCommand extends Command<CommandContext> {
   @Command.Path("plugin-aws-codeartifact", "migrate")
-  async execute() {
+  async execute(): Promise<0 | 1> {
     const configuration = await Configuration.find(
       this.context.cwd,
       this.context.plugins
@@ -28,7 +28,7 @@ export class MigrateCommand extends Command<CommandContext> {
         stdout: this.context.stdout,
       },
       async (report) => {
-        await migrateLockFile({ configuration, report });
+        await migrateLockFile(configuration, report);
       }
     );
 
@@ -45,17 +45,14 @@ const NPM_PROTOCOL = "npm:";
 /**
  * Modify the lockfile so that relevant packages resolve from AWS CodeArtifact
  *
- * @param {Configuration} configuration
- * @param {StreamReport} report
+ * @param {Configuration} configuration - Yarn configuration
+ * @param {StreamReport} report - Yarn stream report
  * @returns {Promise<void>}
  */
-const migrateLockFile = async ({
-  configuration,
-  report,
-}: {
-  configuration: Configuration;
-  report: StreamReport;
-}) => {
+const migrateLockFile = async (
+  configuration: Configuration,
+  report: StreamReport
+) => {
   const lockfilePath = ppath.join(
     configuration.startingCwd,
     configuration.get("lockfileFilename")
@@ -101,9 +98,9 @@ const migrateLockFile = async ({
 /**
  * Resolve a resolution into its current and migrated locators
  *
- * @param {Configuration} configuration
- * @param {string} resolution
- * @returns {{Locator} oldLocator, {Locator} newLocator}
+ * @param {Configuration} configuration - Yarn configuration
+ * @param {string} resolution - Yarn lockfile resolution
+ * @returns {Locators} Old and new locators
  */
 const resolveLockfileEntry = (
   configuration: Configuration,
@@ -125,12 +122,17 @@ const resolveLockfileEntry = (
   return { oldLocator, newLocator };
 };
 
+type Locators = {
+  oldLocator: Locator;
+  newLocator: Locator;
+};
+
 /**
- * Compute a migrated locator from a resolution and registry
+ * Compute a migrated locator from a resolution and AWS CodeArtifact registry URL
  *
- * @param {string} resolution
- * @param {string} registry
- * @returns {Locator}
+ * @param {string} resolution - Yarn lockfile resolution
+ * @param {string} registry - AWS CodeArtifact Registry URL
+ * @returns {Locator} Migrated locator
  */
 export const computeMigratedLocator = (
   resolution: string,

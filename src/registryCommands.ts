@@ -8,7 +8,9 @@ type RegistryCommand = {
   positionalArgs: string[];
   // function that returns which registry type the command requires
   // defaults to FETCH_REGISTRY
-  registryFn?: (yargsParserOutput: any) => npmConfigUtils.RegistryType;
+  registryFn?: (yargsParserOutput: {
+    [key: string]: string | boolean;
+  }) => npmConfigUtils.RegistryType;
   // if specified, number of positional arguments to splice off before re-evaluating the command
   shiftPositionalArgs?: number;
 };
@@ -119,8 +121,8 @@ export const registryCommands: RegistryCommand[] = [
 /**
  * Given a list of positional arguments in a command, find the relevant registry command from the list
  *
- * @param {string[]} positionalArgs
- * @returns RegistryCommand
+ * @param {string[]} positionalArgs - Positional arguments (e.g. `['add', 'moment']` in `yarn add moment`)
+ * @returns {RegistryCommand} Found registry command
  */
 export const findRegistryCommand = (
   positionalArgs: string[]
