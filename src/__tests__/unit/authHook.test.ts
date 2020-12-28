@@ -82,7 +82,7 @@ describe('maybeSetAuthorizationTokensForRegistries', () => {
 
     await maybeSetAuthorizationTokensForRegistries(configuration, registryType, tokenGenerator)
 
-    expect(configuration.values.get(NPM_AUTH_TOKEN)).toBe('test-token-1-null')
+    expect(configuration.values.get(NPM_AUTH_TOKEN)).toBe('test-token-1-aws-profile-3')
     expect(configuration.values.get(NPM_ALWAYS_AUTH)).toBe(true)
 
     expect(configuration.values.get('npmRegistries').get(awsCodeArtifactRegistry2).get(NPM_AUTH_TOKEN)).toBe(
@@ -109,7 +109,7 @@ describe('maybeSetAuthorizationTokensForRegistries', () => {
     expect(configuration.values.get('npmRegistries').get(awsCodeArtifactRegistry4).get(NPM_ALWAYS_AUTH)).toBe(undefined)
 
     expect(configuration.values.get('npmScopes').get('scope-a').get(NPM_AUTH_TOKEN)).toBe(
-      `test-token-3-${registryType === FETCH_REGISTRY ? 'aws-profile-7' : null}`
+      `test-token-3-${registryType === FETCH_REGISTRY ? 'aws-profile-7' : 'aws-profile-3'}`
     )
     expect(configuration.values.get('npmScopes').get('scope-a').get(NPM_ALWAYS_AUTH)).toBe(true)
     expect(configuration.values.get('npmScopes').get('scope-b').get(NPM_AUTH_TOKEN)).toBe(undefined)

@@ -1,11 +1,12 @@
 import { Configuration, StreamReport } from '@yarnpkg/core'
-import { ppath, PortablePath, npath } from '@yarnpkg/fslib'
+import { ppath, PortablePath } from '@yarnpkg/fslib'
 import NpmPlugin from '@yarnpkg/plugin-npm'
 import { Writable } from 'stream'
 import { execSync } from 'child_process'
 import { join } from 'path'
 import { copyFileSync, readFileSync } from 'fs'
 import { migrateLockFile } from '../../commands/migrate'
+import { pluginRootDir } from '../../utils'
 
 process.env.YARN_RC_FILENAME = '.yarnrc-integration.yml'
 
@@ -14,7 +15,7 @@ describe('migrateLockFile', () => {
     const cwd = join(__dirname, 'fixtures', 'test-package-migrate')
     copyFileSync(join(cwd, 'yarn.lock.original'), join(cwd, 'yarn.lock'))
     const configuration = await Configuration.find(
-      ppath.join(npath.toPortablePath(__dirname), 'fixtures' as PortablePath, 'test-package-migrate' as PortablePath),
+      ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures/test-package-migrate' as PortablePath),
       {
         modules: new Map([[`@yarnpkg/plugin-npm`, NpmPlugin]]),
         plugins: new Set([`@yarnpkg/plugin-npm`])

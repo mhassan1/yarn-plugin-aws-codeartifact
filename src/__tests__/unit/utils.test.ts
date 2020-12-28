@@ -1,6 +1,7 @@
-import { PortablePath, ppath, npath } from '@yarnpkg/fslib'
+import { PortablePath, ppath } from '@yarnpkg/fslib'
 import { npmConfigUtils } from '@yarnpkg/plugin-npm'
 import {
+  pluginRootDir,
   getRegistryTypeForCommand,
   arrayStartsWith,
   parseRegistryUrl,
@@ -69,13 +70,7 @@ describe('parseRegistryUrl', () => {
 describe('buildPluginConfig', () => {
   it('should build plugin config', async () => {
     const pluginConfig = await buildPluginConfig(
-      ppath.join(
-        npath.toPortablePath(__dirname),
-        '..' as PortablePath,
-        'integration' as PortablePath,
-        'fixtures' as PortablePath,
-        'test-package' as PortablePath
-      )
+      ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures/test-package' as PortablePath)
     )
     expect(pluginConfig).toStrictEqual({
       npmRegistryServerConfig: {
