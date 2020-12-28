@@ -92,6 +92,7 @@ describe("buildPluginConfig", () => {
       },
       npmPublishRegistryConfig: {
         awsProfile: "aws-profile-2",
+        preferAwsEnvironmentCredentials: "true",
       },
     });
   });

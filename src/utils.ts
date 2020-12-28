@@ -122,7 +122,11 @@ export type PluginConfig = {
 
 export type PluginRegistryConfig = {
   awsProfile: string;
+  // plugin configuration values are always interpreted as string
+  preferAwsEnvironmentCredentials?: BooleanString;
 };
+
+type BooleanString = "true" | "false";
 
 /**
  * Traverse directories upwards looking for plugin configuration files (based on `Configuration.findRcFiles`)

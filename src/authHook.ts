@@ -1,4 +1,4 @@
-import { Configuration } from "@yarnpkg/core";
+import { Configuration, miscUtils } from "@yarnpkg/core";
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
 import {
   getRegistryTypeForCommand,
@@ -13,6 +13,8 @@ import {
 } from "./utils";
 import { Codeartifact } from "@aws-sdk/client-codeartifact";
 import { defaultProvider } from "@aws-sdk/credential-provider-node";
+import { fromEnv } from "@aws-sdk/credential-provider-env";
+import { chain } from "@aws-sdk/property-provider";
 
 type RegistryConfigMap = Map<string, string | boolean>;
 type TokenGenerator = (
@@ -69,20 +71,40 @@ const getAuthorizationToken = async (
   pluginRegistryConfig: PluginRegistryConfig | null
 ): Promise<string> => {
   const { domain, domainOwner, region } = authorizationTokenParams;
-  const { awsProfile } = pluginRegistryConfig || { awsProfile: undefined };
+  const {
+    awsProfile,
+    preferAwsEnvironmentCredentials,
+  } = pluginRegistryConfig || {
+    awsProfile: undefined,
+    preferAwsEnvironmentCredentials: false,
+  };
 
   // for testing purposes only
   if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
-    return ["~~", domain, domainOwner, region, awsProfile, "~~"].join("~");
+    return [
+      "~~",
+      domain,
+      domainOwner,
+      region,
+      awsProfile,
+      preferAwsEnvironmentCredentials,
+      "~~",
+    ].join("~");
   }
+
+  const _defaultProvider = defaultProvider({
+    // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
+    // `awsProfile` that is `undefined` should be excluded
+    ...(awsProfile !== undefined ? { profile: awsProfile } : {}),
+  });
+
+  const credentials = miscUtils.parseBoolean(preferAwsEnvironmentCredentials)
+    ? chain(fromEnv(), _defaultProvider)
+    : _defaultProvider;
 
   const client = new Codeartifact({
     region,
-    credentialDefaultProvider: defaultProvider({
-      // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
-      // `awsProfile` that is `undefined` should be excluded
-      ...(awsProfile !== undefined ? { profile: awsProfile } : {}),
-    }),
+    credentials,
   });
   const params = {
     domain,

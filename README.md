@@ -44,26 +44,39 @@ in your project directory, any parent directory, or the home directory (similar 
 ```yaml
 # .yarn-plugin-aws-codeartifact.yml
 
-npmRegistryServerConfig:
-  awsProfile: my-profile
+npmRegistryServerConfig: PluginRegistryConfig
 # OR
-npmPublishRegistryConfig:
-  awsProfile: my-profile
+npmPublishRegistryConfig: PluginRegistryConfig
 # OR
 npmRegistries:
-  //domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/:
-    awsProfile: my-profile
+  //domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/: PluginRegistryConfig
 # OR
 npmScopes:
   my-scope:
-    npmRegistryServerConfig:
-      awsProfile: my-profile
+    npmRegistryServerConfig: PluginRegistryConfig
     # OR
-    npmPublishRegistryConfig:
-      awsProfile: my-profile
+    npmPublishRegistryConfig: PluginRegistryConfig
 ```
-NOTE: An `awsProfile` value (including `''`, which is equivalent to `default`) will override the `AWS_PROFILE` environment variable;
-otherwise, the `AWS_PROFILE` environment variable will be used (or if it is unset, the default profile will be used).
+where `PluginRegistryConfig` contains the following properties:
+* `awsProfile` - Name of the AWS Profile to use for this registry
+  * An `awsProfile` value (including `''`, which is equivalent to `'default'`) will override the `AWS_PROFILE` environment variable;
+    otherwise, the `AWS_PROFILE` environment variable will be used (or if it is unset, the default profile will be used).
+* `preferAwsEnvironmentCredentials` - Whether to prefer AWS credentials provided by environment variables, i.e. `AWS_ACCESS_KEY_ID` (default `false`)
+  * By default, if `awsProfile` is provided, AWS SDK v3 will look for that profile only and fail if it doesn't exist on the machine.
+  * Set this flag to check for environment variable credentials first, and only attempt to use the profile if credentials are not provided by environment variables.
+  * This flag is useful in the scenario where developers will use profiles but CI environments will use environment variables.
+```yaml
+# PluginRegistryConfig
+
+# Name of the AWS Profile to use for this registry.
+# 
+awsProfile: aws-profile
+
+# By default, if `awsProfile` is provided, AWS SDK v3 will look for that profile and fail if it doesn't exist on the machine.
+# Set this to `true` to first check for AWS credentials provided by environment variables (i.e. `AWS_ACCESS_KEY_ID`);
+#   
+preferAwsEnvironmentCredentials: true
+```
 
 ## Migration
 
