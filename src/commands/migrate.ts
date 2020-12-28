@@ -49,10 +49,10 @@ const NPM_PROTOCOL = "npm:";
  * @param {StreamReport} report - Yarn stream report
  * @returns {Promise<void>}
  */
-const migrateLockFile = async (
+export const migrateLockFile = async (
   configuration: Configuration,
   report: StreamReport
-) => {
+): Promise<void> => {
   const lockfilePath = ppath.join(
     configuration.startingCwd,
     configuration.get("lockfileFilename")

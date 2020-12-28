@@ -1,4 +1,4 @@
-import { PortablePath } from "@yarnpkg/fslib";
+import { PortablePath, ppath, npath } from "@yarnpkg/fslib";
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
 import {
   getRegistryTypeForCommand,
@@ -10,7 +10,6 @@ import {
   getPluginRegistryConfig,
   getScopePluginRegistryConfig,
 } from "../../utils";
-import { join } from "path";
 
 const { FETCH_REGISTRY, PUBLISH_REGISTRY } = npmConfigUtils.RegistryType;
 
@@ -79,13 +78,13 @@ describe("parseRegistryUrl", () => {
 describe("buildPluginConfig", () => {
   it("should build plugin config", async () => {
     const pluginConfig = await buildPluginConfig(
-      join(
-        __dirname,
-        "..",
-        "integration",
-        "fixtures",
-        "test-package"
-      ) as PortablePath
+      ppath.join(
+        npath.toPortablePath(__dirname),
+        ".." as PortablePath,
+        "integration" as PortablePath,
+        "fixtures" as PortablePath,
+        "test-package" as PortablePath
+      )
     );
     expect(pluginConfig).toStrictEqual({
       npmRegistryServerConfig: {
@@ -93,6 +92,7 @@ describe("buildPluginConfig", () => {
       },
       npmPublishRegistryConfig: {
         awsProfile: "aws-profile-2",
+        preferAwsEnvironmentCredentials: "true",
       },
     });
   });

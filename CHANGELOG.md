@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0] - 2020-12-28
+[0.6.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.5.0...v0.6.0
+
+- Ignore plugin configuration files outside this project during automated tests
+- Add support for `preferAwsEnvironmentCredentials` in `PluginRegistryConfig`
+- Bump dev dependencies
+
 ## [0.5.0] - 2020-12-23
 [0.5.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.4.0...v0.5.0
 

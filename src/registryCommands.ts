@@ -15,6 +15,7 @@ type RegistryCommand = {
   shiftPositionalArgs?: number;
 };
 
+/* istanbul ignore next */
 /**
  * List of `yarn` commands that require a registry, and which registry type they require
  */

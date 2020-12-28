@@ -3,10 +3,9 @@ import { join } from "path";
 
 const env = {
   ...process.env,
-  _YARN_PLUGIN_AWS_CODEARTIFACT_TESTING: "true",
   _YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG: "true",
 };
-const expectedRegex = /Setting token for registry .+ to ~~~domain-test~000000000000~us-east-1~aws-profile-2~~~/;
+const expectedRegex = /Setting token for registry .+ to ~~~domain-test~000000000000~us-east-1~aws-profile-2~true~~~/;
 
 describe("commands that require a registry", () => {
   it("should retrieve authorization tokens for AWS CodeArtifact registries", () => {
