@@ -1,4 +1,4 @@
-import { PortablePath, ppath } from "@yarnpkg/fslib";
+import { PortablePath, ppath, npath } from "@yarnpkg/fslib";
 import { npmConfigUtils } from "@yarnpkg/plugin-npm";
 import {
   getRegistryTypeForCommand,
@@ -79,7 +79,7 @@ describe("buildPluginConfig", () => {
   it("should build plugin config", async () => {
     const pluginConfig = await buildPluginConfig(
       ppath.join(
-        __dirname as PortablePath,
+        npath.toPortablePath(__dirname),
         ".." as PortablePath,
         "integration" as PortablePath,
         "fixtures" as PortablePath,

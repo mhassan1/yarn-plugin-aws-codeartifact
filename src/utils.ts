@@ -143,17 +143,21 @@ const findPluginConfigFiles = async (
   let currentCwd = null;
   while (nextCwd !== currentCwd) {
     currentCwd = nextCwd;
-    const configPath = ppath.join(
-      currentCwd,
-      pluginConfigFilename as PortablePath
-    );
-    if (xfs.existsSync(configPath)) {
-      const content = await xfs.readFilePromise(configPath, `utf8`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = parseSyml(content) as any;
-      configFiles.push({ path: configPath, cwd: currentCwd, data });
+
+    const pluginConfigFile = await readPluginConfigFile(currentCwd);
+    if (pluginConfigFile !== null) {
+      configFiles.push(pluginConfigFile);
     }
+
     nextCwd = ppath.dirname(currentCwd);
+
+    // do not traverse higher than this project's root directory in automated tests
+    if (
+      process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING &&
+      ppath.basename(currentCwd) === "yarn-plugin-aws-codeartifact"
+    ) {
+      break;
+    }
   }
 
   return configFiles;
@@ -165,21 +169,29 @@ const findPluginConfigFiles = async (
  * @returns {Promise<ConfigFile | null>} Configuration file in home directory
  */
 const findHomePluginConfigFile = async (): Promise<ConfigFile | null> => {
-  const homeFolder =
-    process.env.NODE_ENV === "test"
-      ? ppath.join(
-          __dirname as PortablePath,
-          ".." as PortablePath,
-          ".." as PortablePath
-        )
-      : folderUtils.getHomeFolder();
-  const homeConfigFilePath = ppath.join(homeFolder, pluginConfigFilename);
+  if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
+    return null;
+  }
 
-  if (xfs.existsSync(homeConfigFilePath)) {
-    const content = await xfs.readFilePromise(homeConfigFilePath, `utf8`);
+  const homeFolder = folderUtils.getHomeFolder();
+  return readPluginConfigFile(homeFolder);
+};
+
+/**
+ * Read a plugin configuration file, if it exists
+ *
+ * @param {PortablePath} folder - Folder with configuration file
+ * @returns {Promise<ConfigFile | null>} Plugin configuration file
+ */
+const readPluginConfigFile = async (
+  folder: PortablePath
+): Promise<ConfigFile | null> => {
+  const configFilePath = ppath.join(folder, pluginConfigFilename);
+  if (xfs.existsSync(configFilePath)) {
+    const content = await xfs.readFilePromise(configFilePath, `utf8`);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = parseSyml(content) as any;
-    return { path: homeConfigFilePath, cwd: homeFolder, data };
+    return { path: configFilePath, cwd: folder, data };
   }
 
   return null;

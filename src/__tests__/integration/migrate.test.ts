@@ -1,5 +1,5 @@
 import { Configuration, StreamReport } from "@yarnpkg/core";
-import { ppath, PortablePath } from "@yarnpkg/fslib";
+import { ppath, PortablePath, npath } from "@yarnpkg/fslib";
 import NpmPlugin from "@yarnpkg/plugin-npm";
 import { Writable } from "stream";
 import { execSync } from "child_process";
@@ -15,7 +15,7 @@ describe("migrateLockFile", () => {
     copyFileSync(join(cwd, "yarn.lock.original"), join(cwd, "yarn.lock"));
     const configuration = await Configuration.find(
       ppath.join(
-        __dirname as PortablePath,
+        npath.toPortablePath(__dirname),
         "fixtures" as PortablePath,
         "test-package-migrate" as PortablePath
       ),

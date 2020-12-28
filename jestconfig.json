@@ -4,6 +4,7 @@
   },
   "testRegex": "(/__tests__/.*|(\\.|/)test)\\.ts$",
   "moduleFileExtensions": ["ts", "js"],
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
   "collectCoverage": true,
   "coverageThreshold": {
     "global": {
