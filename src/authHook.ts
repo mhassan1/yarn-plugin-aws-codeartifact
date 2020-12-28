@@ -98,7 +98,9 @@ const getAuthorizationToken = async (
     ...(awsProfile !== undefined ? { profile: awsProfile } : {}),
   });
 
-  const credentials = miscUtils.parseBoolean(preferAwsEnvironmentCredentials)
+  const credentials = miscUtils.parseOptionalBoolean(
+    preferAwsEnvironmentCredentials
+  )
     ? chain(fromEnv(), _defaultProvider)
     : _defaultProvider;
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2020-12-28
+[0.6.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.6.0...v0.6.1
+
+- Use `miscUtils.parseOptionalBoolean` for optional `preferAwsEnvironmentCredentials`
+
 ## [0.6.0] - 2020-12-28
 [0.6.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.5.0...v0.6.0
 
