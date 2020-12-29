@@ -96,6 +96,9 @@ const getAuthorizationToken = async (
     durationSeconds: 900 // 15 minutes
   }
   const { authorizationToken } = await client.getAuthorizationToken(params)
+  if (!authorizationToken) {
+    throw new Error('AWS CodeArtifact Authorization token returned undefined')
+  }
   return authorizationToken
 }
 
