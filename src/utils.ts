@@ -1,16 +1,16 @@
-import { folderUtils } from "@yarnpkg/core";
-import { Filename, PortablePath, ppath, xfs } from "@yarnpkg/fslib";
-import { parseSyml } from "@yarnpkg/parsers";
-import { npmConfigUtils } from "@yarnpkg/plugin-npm";
-import parser from "yargs-parser";
-import { findRegistryCommand } from "./registryCommands";
-import defaultsDeep from "lodash.defaultsdeep";
-import get from "lodash.get";
+import { folderUtils } from '@yarnpkg/core'
+import { Filename, PortablePath, ppath, xfs } from '@yarnpkg/fslib'
+import { parseSyml } from '@yarnpkg/parsers'
+import { npmConfigUtils } from '@yarnpkg/plugin-npm'
+import parser from 'yargs-parser'
+import { findRegistryCommand } from './registryCommands'
+import defaultsDeep from 'lodash.defaultsdeep'
+import get from 'lodash.get'
 
 /**
  * Name of the plugin configuration file
  */
-const pluginConfigFilename = ".yarn-plugin-aws-codeartifact.yml" as Filename;
+const pluginConfigFilename = '.yarn-plugin-aws-codeartifact.yml' as Filename
 
 /**
  * Determine registry type for a `yarn` command
@@ -23,30 +23,28 @@ const pluginConfigFilename = ".yarn-plugin-aws-codeartifact.yml" as Filename;
 export const getRegistryTypeForCommand = (
   argv: string[] = process.argv.slice(2)
 ): npmConfigUtils.RegistryType | null => {
-  const yargsParserOutput = parser(argv);
-  const { _: positionalArgs }: { _: string[] } = yargsParserOutput;
+  const yargsParserOutput = parser(argv)
+  const { _: positionalArgs }: { _: string[] } = yargsParserOutput
 
   // `yarn` by itself is the same as `yarn install`
   if (!positionalArgs.length) {
-    positionalArgs.push("install");
+    positionalArgs.push('install')
   }
 
-  let registryCommand = findRegistryCommand(positionalArgs);
+  let registryCommand = findRegistryCommand(positionalArgs)
 
-  const { shiftPositionalArgs } = registryCommand || {};
+  const { shiftPositionalArgs } = registryCommand || {}
   if (shiftPositionalArgs) {
     // shift `positionalArgs` and find the `registryCommand` again
-    positionalArgs.splice(0, shiftPositionalArgs);
-    registryCommand = findRegistryCommand(positionalArgs);
+    positionalArgs.splice(0, shiftPositionalArgs)
+    registryCommand = findRegistryCommand(positionalArgs)
   }
 
-  if (registryCommand === null) return null;
+  if (registryCommand === null) return null
 
-  const {
-    registryFn = () => npmConfigUtils.RegistryType.FETCH_REGISTRY,
-  } = registryCommand;
-  return registryFn(yargsParserOutput);
-};
+  const { registryFn = () => npmConfigUtils.RegistryType.FETCH_REGISTRY } = registryCommand
+  return registryFn(yargsParserOutput)
+}
 
 /**
  * Check whether an array starts with a list of items
@@ -58,10 +56,10 @@ export const getRegistryTypeForCommand = (
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const arrayStartsWith = (array: any[], ...items: any[]): boolean => {
   for (let i = 0; i < items.length; i++) {
-    if (array[i] !== items[i]) return false;
+    if (array[i] !== items[i]) return false
   }
-  return true;
-};
+  return true
+}
 
 /**
  * Parse an AWS CodeArtifact registry URL into its parts
@@ -69,24 +67,20 @@ export const arrayStartsWith = (array: any[], ...items: any[]): boolean => {
  * @param {string} registry - AWS CodeArtifact Registry URL
  * @returns {AuthorizationTokenParams} Parameters that will be used to retrieve an AWS CodeArtifact authorization token
  */
-export const parseRegistryUrl = (
-  registry: string
-): AuthorizationTokenParams | null => {
-  const match = registry.match(
-    /^https?:\/\/(.+)-(\d+)\.d\.codeartifact\.(.+)\.amazonaws\.com\/npm\/(.+)\/?$/
-  );
+export const parseRegistryUrl = (registry: string): AuthorizationTokenParams | null => {
+  const match = registry.match(/^https?:\/\/(.+)-(\d+)\.d\.codeartifact\.(.+)\.amazonaws\.com\/npm\/(.+)\/?$/)
 
-  if (!match) return null;
+  if (!match) return null
 
-  const [, domain, domainOwner, region]: string[] = match;
-  return { domain, domainOwner, region };
-};
+  const [, domain, domainOwner, region]: string[] = match
+  return { domain, domainOwner, region }
+}
 
 export type AuthorizationTokenParams = {
-  domain: string;
-  domainOwner: string;
-  region: string;
-};
+  domain: string
+  domainOwner: string
+  region: string
+}
 
 /**
  * Build plugin configuration object
@@ -94,39 +88,37 @@ export type AuthorizationTokenParams = {
  * @param {PortablePath} startingCwd - Yarn configuration working directory
  * @returns {Promise<PluginConfig>} Plugin configuration
  */
-export const buildPluginConfig = async (
-  startingCwd: PortablePath
-): Promise<PluginConfig> => {
-  const configFiles = await findPluginConfigFiles(startingCwd);
-  const homeConfigFile = await findHomePluginConfigFile();
+export const buildPluginConfig = async (startingCwd: PortablePath): Promise<PluginConfig> => {
+  const configFiles = await findPluginConfigFiles(startingCwd)
+  const homeConfigFile = await findHomePluginConfigFile()
   if (homeConfigFile !== null) {
-    configFiles.push(homeConfigFile);
+    configFiles.push(homeConfigFile)
   }
-  const configData = configFiles.map(({ data }) => data);
-  return defaultsDeep({}, ...configData);
-};
+  const configData = configFiles.map(({ data }) => data)
+  return defaultsDeep({}, ...configData)
+}
 
 export type PluginConfig = {
-  npmRegistryServerConfig?: PluginRegistryConfig;
-  npmPublishRegistryConfig?: PluginRegistryConfig;
+  npmRegistryServerConfig?: PluginRegistryConfig
+  npmPublishRegistryConfig?: PluginRegistryConfig
   npmScopes?: {
     [scope: string]: {
-      npmRegistryServerConfig?: PluginRegistryConfig;
-      npmPublishRegistryConfig?: PluginRegistryConfig;
-    };
-  };
+      npmRegistryServerConfig?: PluginRegistryConfig
+      npmPublishRegistryConfig?: PluginRegistryConfig
+    }
+  }
   npmRegistries?: {
-    [registry: string]: PluginRegistryConfig;
-  };
-};
+    [registry: string]: PluginRegistryConfig
+  }
+}
 
 export type PluginRegistryConfig = {
-  awsProfile: string;
+  awsProfile: string
   // plugin configuration values are always interpreted as string
-  preferAwsEnvironmentCredentials?: BooleanString;
-};
+  preferAwsEnvironmentCredentials?: BooleanString
+}
 
-type BooleanString = "true" | "false";
+type BooleanString = 'true' | 'false'
 
 /**
  * Traverse directories upwards looking for plugin configuration files (based on `Configuration.findRcFiles`)
@@ -134,34 +126,32 @@ type BooleanString = "true" | "false";
  * @param {PortablePath} startingCwd - Yarn configuration working directory
  * @returns {Promise<ConfigFile[]>} Array of configuration files in ancestor directories
  */
-const findPluginConfigFiles = async (
-  startingCwd: PortablePath
-): Promise<ConfigFile[]> => {
-  const configFiles = [];
+const findPluginConfigFiles = async (startingCwd: PortablePath): Promise<ConfigFile[]> => {
+  const configFiles = []
 
-  let nextCwd = startingCwd;
-  let currentCwd = null;
+  let nextCwd = startingCwd
+  let currentCwd = null
   while (nextCwd !== currentCwd) {
-    currentCwd = nextCwd;
+    currentCwd = nextCwd
 
-    const pluginConfigFile = await readPluginConfigFile(currentCwd);
+    const pluginConfigFile = await readPluginConfigFile(currentCwd)
     if (pluginConfigFile !== null) {
-      configFiles.push(pluginConfigFile);
+      configFiles.push(pluginConfigFile)
     }
 
-    nextCwd = ppath.dirname(currentCwd);
+    nextCwd = ppath.dirname(currentCwd)
 
     // do not traverse higher than this project's root directory in automated tests
     if (
       process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING &&
-      ppath.basename(currentCwd) === "yarn-plugin-aws-codeartifact"
+      ppath.basename(currentCwd) === 'yarn-plugin-aws-codeartifact'
     ) {
-      break;
+      break
     }
   }
 
-  return configFiles;
-};
+  return configFiles
+}
 
 /**
  * Look for plugin configuration file in home directory (based on `Configuration.findHomeRcFile`)
@@ -170,12 +160,12 @@ const findPluginConfigFiles = async (
  */
 const findHomePluginConfigFile = async (): Promise<ConfigFile | null> => {
   if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
-    return null;
+    return null
   }
 
-  const homeFolder = folderUtils.getHomeFolder();
-  return readPluginConfigFile(homeFolder);
-};
+  const homeFolder = folderUtils.getHomeFolder()
+  return readPluginConfigFile(homeFolder)
+}
 
 /**
  * Read a plugin configuration file, if it exists
@@ -183,26 +173,24 @@ const findHomePluginConfigFile = async (): Promise<ConfigFile | null> => {
  * @param {PortablePath} folder - Folder with configuration file
  * @returns {Promise<ConfigFile | null>} Plugin configuration file
  */
-const readPluginConfigFile = async (
-  folder: PortablePath
-): Promise<ConfigFile | null> => {
-  const configFilePath = ppath.join(folder, pluginConfigFilename);
+const readPluginConfigFile = async (folder: PortablePath): Promise<ConfigFile | null> => {
+  const configFilePath = ppath.join(folder, pluginConfigFilename)
   if (xfs.existsSync(configFilePath)) {
-    const content = await xfs.readFilePromise(configFilePath, `utf8`);
+    const content = await xfs.readFilePromise(configFilePath, `utf8`)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = parseSyml(content) as any;
-    return { path: configFilePath, cwd: folder, data };
+    const data = parseSyml(content) as any
+    return { path: configFilePath, cwd: folder, data }
   }
 
-  return null;
-};
+  return null
+}
 
 type ConfigFile = {
-  path: PortablePath;
-  cwd: PortablePath;
+  path: PortablePath
+  cwd: PortablePath
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
-};
+  data: any
+}
 
 /**
  * Compute plugin registry configuration key for a registry type
@@ -210,11 +198,9 @@ type ConfigFile = {
  * @param {npmConfigUtils.RegistryType} type - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
  * @returns {string} - Plugin registry configuration key (`npmRegistryServerConfig` or `npmPublishRegistryConfig`)
  */
-const computePluginRegistryConfigKey = (
-  type: npmConfigUtils.RegistryType
-): string => {
-  return `${type}Config`;
-};
+const computePluginRegistryConfigKey = (type: npmConfigUtils.RegistryType): string => {
+  return `${type}Config`
+}
 
 /**
  * Get default plugin registry configuration (based on logic in `npmConfigUtils.getDefaultRegistry`)
@@ -229,14 +215,10 @@ export const getDefaultPluginRegistryConfig = (
 ): PluginRegistryConfig | null => {
   return (
     get(pluginConfig, [computePluginRegistryConfigKey(type)]) ||
-    get(pluginConfig, [
-      computePluginRegistryConfigKey(
-        npmConfigUtils.RegistryType.FETCH_REGISTRY
-      ),
-    ]) ||
+    get(pluginConfig, [computePluginRegistryConfigKey(npmConfigUtils.RegistryType.FETCH_REGISTRY)]) ||
     null
-  );
-};
+  )
+}
 
 /**
  * Get plugin registry configuration from `npmRegistries` (based on logic in `npmConfigUtils.getRegistryConfiguration`)
@@ -245,12 +227,9 @@ export const getDefaultPluginRegistryConfig = (
  * @param {PluginConfig} pluginConfig - Plugin configuration
  * @returns {PluginRegistryConfig | null} Plugin registry configuration
  */
-export const getPluginRegistryConfig = (
-  registry: string,
-  pluginConfig: PluginConfig
-): PluginRegistryConfig | null => {
-  return get(pluginConfig, ["npmRegistries", registry]) || null;
-};
+export const getPluginRegistryConfig = (registry: string, pluginConfig: PluginConfig): PluginRegistryConfig | null => {
+  return get(pluginConfig, ['npmRegistries', registry]) || null
+}
 
 /**
  * Get scope plugin registry configuration (based on logic in `npmConfigUtils.getScopeRegistry`)
@@ -265,11 +244,7 @@ export const getScopePluginRegistryConfig = (
   pluginConfig: PluginConfig,
   type: npmConfigUtils.RegistryType
 ): PluginRegistryConfig | null => {
-  const scopeConfig = get(pluginConfig, ["npmScopes", scope]) || null;
-  if (scopeConfig === null)
-    return getDefaultPluginRegistryConfig(pluginConfig, type);
-  return (
-    get(scopeConfig, [computePluginRegistryConfigKey(type)]) ||
-    getDefaultPluginRegistryConfig(pluginConfig, type)
-  );
-};
+  const scopeConfig = get(pluginConfig, ['npmScopes', scope]) || null
+  if (scopeConfig === null) return getDefaultPluginRegistryConfig(pluginConfig, type)
+  return get(scopeConfig, [computePluginRegistryConfigKey(type)]) || getDefaultPluginRegistryConfig(pluginConfig, type)
+}
