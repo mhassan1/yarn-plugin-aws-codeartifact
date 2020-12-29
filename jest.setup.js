@@ -1,1 +1,1 @@
-process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING = "true";
+process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING = 'true'

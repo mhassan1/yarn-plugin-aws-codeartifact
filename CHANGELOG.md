@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0] - 2020-12-29
+[0.7.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.6.1...v0.7.0
+
+- Fixed: Prettier formatting
+- Added: yarn prettier-check command
+- Fixed: VS Code integration
+- Fixed: typescript issue - added validation for AWS CA auth token
+
 ## [0.6.1] - 2020-12-28
 [0.6.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.6.0...v0.6.1
 
