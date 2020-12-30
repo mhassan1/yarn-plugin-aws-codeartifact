@@ -3,6 +3,7 @@
 ## [0.7.1] - 2020-12-30
 [0.7.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.0...v0.7.1
 
+- Fixed: Upgrade yarn for `fs` support of `BigInt` (https://github.com/yarnpkg/berry/issues/2232)
 - Fixed: Use local home directory in automated tests
 
 ## [0.7.0] - 2020-12-29
