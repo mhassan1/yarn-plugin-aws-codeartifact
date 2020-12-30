@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.2] - 2020-12-30
+[0.7.2]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.1...v0.7.2
+
+- Fixed: Cache yarn cache in travis-ci
+
 ## [0.7.1] - 2020-12-30
 [0.7.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.0...v0.7.1
 
