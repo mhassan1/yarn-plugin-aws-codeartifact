@@ -1,5 +1,5 @@
 import { folderUtils } from '@yarnpkg/core'
-import { Filename, PortablePath, ppath, xfs } from '@yarnpkg/fslib'
+import { Filename, PortablePath, ppath, xfs, npath } from '@yarnpkg/fslib'
 import { parseSyml } from '@yarnpkg/parsers'
 import { npmConfigUtils } from '@yarnpkg/plugin-npm'
 import parser from 'yargs-parser'
@@ -11,6 +11,16 @@ import get from 'lodash.get'
  * Name of the plugin configuration file
  */
 const pluginConfigFilename = '.yarn-plugin-aws-codeartifact.yml' as Filename
+
+/**
+ * Root directory of this plugin, for use in automated tests
+ */
+export const pluginRootDir: PortablePath =
+  npath.basename(__dirname) === '@yarnpkg'
+    ? // __dirname = `<rootDir>/bundles/@yarnpkg`
+      ppath.join(npath.toPortablePath(__dirname), '../..' as PortablePath)
+    : // __dirname = `<rootDir>/src`
+      ppath.join(npath.toPortablePath(__dirname), '..' as PortablePath)
 
 /**
  * Determine registry type for a `yarn` command
@@ -142,10 +152,7 @@ const findPluginConfigFiles = async (startingCwd: PortablePath): Promise<ConfigF
     nextCwd = ppath.dirname(currentCwd)
 
     // do not traverse higher than this project's root directory in automated tests
-    if (
-      process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING &&
-      ppath.basename(currentCwd) === 'yarn-plugin-aws-codeartifact'
-    ) {
+    if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING && currentCwd === pluginRootDir) {
       break
     }
   }
@@ -159,11 +166,10 @@ const findPluginConfigFiles = async (startingCwd: PortablePath): Promise<ConfigF
  * @returns {Promise<ConfigFile | null>} Configuration file in home directory
  */
 const findHomePluginConfigFile = async (): Promise<ConfigFile | null> => {
-  if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
-    return null
-  }
+  const homeFolder = process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING
+    ? ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures/home' as PortablePath)
+    : folderUtils.getHomeFolder()
 
-  const homeFolder = folderUtils.getHomeFolder()
   return readPluginConfigFile(homeFolder)
 }
 
