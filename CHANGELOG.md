@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.3] - 2021-01-11
+[0.7.3]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.2...v0.7.3
+
+- Fixed: Correct minimum `yarn` version to resolve `parseOptionalBoolean` error
+
 ## [0.7.2] - 2020-12-30
 [0.7.2]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.1...v0.7.2
 

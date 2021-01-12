@@ -8,7 +8,7 @@
     "url": "git+https://github.com/mhassan1/yarn-plugin-aws-codeartifact.git"
   },
   "engines": {
-    "yarn": "^2.3.0"
+    "yarn": "^2.4.0"
   },
   "keywords": [
     "yarn",
