@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.4] - 2021-01-20
+[0.7.4]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.3...v0.7.4
+
+- Fixed: Start in working directory when searching for plugin config files on `yarn dlx`
+
 ## [0.7.3] - 2021-01-11
 [0.7.3]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.2...v0.7.3
 

@@ -1,6 +1,7 @@
 import { npmConfigUtils } from '@yarnpkg/plugin-npm'
-import { maybeSetAuthorizationTokensForRegistries } from '../../authHook'
+import { maybeSetAuthorizationTokensForRegistries, getPluginConfigStartingCwd } from '../../authHook'
 import { Configuration } from '@yarnpkg/core'
+import { npath, PortablePath } from '@yarnpkg/fslib'
 import { AuthorizationTokenParams, PluginRegistryConfig } from '../../utils'
 
 const { FETCH_REGISTRY, PUBLISH_REGISTRY } = npmConfigUtils.RegistryType
@@ -36,7 +37,7 @@ describe('maybeSetAuthorizationTokensForRegistries', () => {
   ])('should set the full registry configuration : %p', async (registryType, expectedTokenGeneratorCallCount) => {
     tokenGeneratorCallCount = 0
     const configuration = {
-      startingCwd: __dirname,
+      startingCwd: npath.toPortablePath(__dirname),
       get(key: string) {
         if (!this.values.has(key)) throw new Error(`Invalid configuration key "${key}"`)
         return this.values.get(key)
@@ -80,7 +81,12 @@ describe('maybeSetAuthorizationTokensForRegistries', () => {
       ])
     )
 
-    await maybeSetAuthorizationTokensForRegistries(configuration, registryType, tokenGenerator)
+    await maybeSetAuthorizationTokensForRegistries(
+      configuration,
+      configuration.startingCwd,
+      registryType,
+      tokenGenerator
+    )
 
     expect(configuration.values.get(NPM_AUTH_TOKEN)).toBe('test-token-1-aws-profile-3')
     expect(configuration.values.get(NPM_ALWAYS_AUTH)).toBe(true)
@@ -118,5 +124,17 @@ describe('maybeSetAuthorizationTokensForRegistries', () => {
     expect(configuration.values.get('npmScopes').get('scope-c').get(NPM_ALWAYS_AUTH)).toBe(undefined)
 
     expect(tokenGeneratorCallCount).toBe(expectedTokenGeneratorCallCount)
+  })
+})
+
+describe('getPluginConfigStartingCwd', () => {
+  it('should determine the starting directory for plugin configuration files', () => {
+    const configuration = {
+      startingCwd: '/a/b/c' as PortablePath
+    } as Configuration
+    expect(getPluginConfigStartingCwd(configuration, ['install'])).toBe(configuration.startingCwd)
+    expect(getPluginConfigStartingCwd(configuration, ['dlx', 'node-bin-example'])).toBe(
+      npath.toPortablePath(process.cwd())
+    )
   })
 })

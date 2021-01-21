@@ -79,6 +79,14 @@ describe('buildPluginConfig', () => {
       npmPublishRegistryConfig: {
         awsProfile: 'aws-profile-2',
         preferAwsEnvironmentCredentials: 'true'
+      },
+      npmScopes: {
+        'my-scope': {
+          npmRegistryServerConfig: {
+            awsProfile: 'aws-profile-my-scope-1',
+            preferAwsEnvironmentCredentials: 'true'
+          }
+        }
       }
     })
   })
