@@ -1,6 +1,6 @@
 {
   "name": "yarn-plugin-aws-codeartifact",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Yarn v2 plugin that resolves authentication for AWS CodeArtifact NPM registries",
   "main": "src/index.ts",
   "repository": {
