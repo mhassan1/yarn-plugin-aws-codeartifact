@@ -1,5 +1,6 @@
 import { Configuration, miscUtils } from '@yarnpkg/core'
 import { npmConfigUtils } from '@yarnpkg/plugin-npm'
+import { npath, PortablePath } from '@yarnpkg/fslib'
 import {
   getRegistryTypeForCommand,
   AuthorizationTokenParams,
@@ -48,7 +49,14 @@ const maybeSetAuthToken = async ({ configuration }: { configuration: Configurati
   // not a command that requires a registry
   if (registryType === null) return
 
-  await maybeSetAuthorizationTokensForRegistries(configuration, registryType, getAuthorizationToken)
+  const pluginConfigStartingCwd = getPluginConfigStartingCwd(configuration)
+
+  await maybeSetAuthorizationTokensForRegistries(
+    configuration,
+    pluginConfigStartingCwd,
+    registryType,
+    getAuthorizationToken
+  )
 }
 
 /**
@@ -106,16 +114,18 @@ const getAuthorizationToken = async (
  * For all unique AWS CodeArtifact registries in the configuration, generate an authorization token and put it in the configuration
  *
  * @param {Configuration} configuration - Yarn configuration
+ * @param {PortablePath} pluginConfigStartingCwd - Starting directory for searching for plugin configuration files
  * @param {npmConfigUtils.RegistryType} registryType - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
  * @param {TokenGenerator} tokenGenerator - Function that generates authorization tokens
  * @returns {Promise<void>}
  */
 export const maybeSetAuthorizationTokensForRegistries = async (
   configuration: Configuration,
+  pluginConfigStartingCwd: PortablePath,
   registryType: npmConfigUtils.RegistryType,
   tokenGenerator: TokenGenerator
 ): Promise<void> => {
-  const pluginConfig: PluginConfig = await buildPluginConfig(configuration.startingCwd)
+  const pluginConfig: PluginConfig = await buildPluginConfig(pluginConfigStartingCwd)
 
   // default registry
   const defaultRegistry: string = npmConfigUtils.getDefaultRegistry({
@@ -229,4 +239,21 @@ const setAuthConfiguration = (registryConfigMap: RegistryConfigMap, authorizatio
   // set these values in memory, to be used by Yarn
   registryConfigMap.set('npmAlwaysAuth', true)
   registryConfigMap.set('npmAuthToken', authorizationToken)
+}
+
+/**
+ * Determine the starting directory for searching for plugin configuration files
+ *
+ * @param {Configuration} configuration - Yarn configuration
+ * @param {string[]} argv - CLI arguments
+ * @returns {PortablePath} Starting directory for searching for plugin configuration files
+ */
+export const getPluginConfigStartingCwd = (
+  configuration: Configuration,
+  argv: string[] = process.argv.slice(2)
+): PortablePath => {
+  // for `dlx` commands, `configuration.startingCwd` will be a temporary directory (not the project directory)
+  // the temporary directory contains a copy of the project's `.yarnrc.yml` file but does not contain the plugin configuration file
+  // in that case, use `process.cwd()` so we start looking for plugin configuration files from where the command is run
+  return argv[0] === 'dlx' ? npath.toPortablePath(process.cwd()) : configuration.startingCwd
 }

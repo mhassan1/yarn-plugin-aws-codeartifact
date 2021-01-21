@@ -1,2 +1,8 @@
 npmRegistryServerConfig:
   awsProfile: aws-profile-1
+
+npmScopes:
+  my-scope:
+    npmRegistryServerConfig:
+      awsProfile: aws-profile-my-scope-1
+      preferAwsEnvironmentCredentials: true
