@@ -6,9 +6,9 @@ const { FETCH_REGISTRY, PUBLISH_REGISTRY } = npmConfigUtils.RegistryType
 type RegistryCommand = {
   // these are the first positional arguments of the command
   positionalArgs: string[]
-  // function that returns which registry type the command requires
+  // function that returns which registry type the command requires (or `null` if none is required)
   // defaults to FETCH_REGISTRY
-  registryFn?: (yargsParserOutput: { [key: string]: string | boolean }) => npmConfigUtils.RegistryType
+  registryFn?: (yargsParserOutput: { [key: string]: string | boolean }) => npmConfigUtils.RegistryType | null
   // if specified, number of positional arguments to splice off before re-evaluating the command
   shiftPositionalArgs?: number
 }
@@ -69,6 +69,10 @@ export const registryCommands: RegistryCommand[] = [
   {
     positionalArgs: ['npm', 'tag', 'remove'],
     registryFn: () => PUBLISH_REGISTRY
+  },
+  {
+    positionalArgs: ['pack'],
+    registryFn: ({ installIfNeeded }) => (installIfNeeded ? FETCH_REGISTRY : null)
   },
   {
     positionalArgs: ['rebuild']
