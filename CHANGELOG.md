@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.5] - 2021-03-12
+[0.7.5]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.4...v0.7.5
+
+- Added: Add `yarn pack --install-if-needed` to list of registry commands
+
 ## [0.7.4] - 2021-01-20
 [0.7.4]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.3...v0.7.4
 
