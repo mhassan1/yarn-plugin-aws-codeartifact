@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.6] - 2021-04-20
+[0.7.6]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.5...v0.7.6
+
+- Added: Add `yarn workspaces focus` to list of registry commands
+
 ## [0.7.5] - 2021-03-12
 [0.7.5]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.4...v0.7.5
 
