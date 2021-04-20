@@ -100,6 +100,9 @@ export const registryCommands: RegistryCommand[] = [
     shiftPositionalArgs: 2
   },
   {
+    positionalArgs: ['workspaces', 'focus']
+  },
+  {
     positionalArgs: ['workspaces', 'foreach'],
     shiftPositionalArgs: 2
   },
