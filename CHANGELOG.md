@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.0] - 2021-08-03
+[0.8.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.6...v0.8.0
+
+- BREAKING: Upgrade to Yarn 3
+
 ## [0.7.6] - 2021-04-20
 [0.7.6]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.7.5...v0.7.6
 
