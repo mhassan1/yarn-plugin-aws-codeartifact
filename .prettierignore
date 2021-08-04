@@ -7,4 +7,4 @@ bundles/**
 
 # Ignore yarn artifacts
 .yarn/
-.pnp.js
+.pnp.*

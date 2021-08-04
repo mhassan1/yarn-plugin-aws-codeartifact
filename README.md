@@ -1,6 +1,8 @@
 # `yarn-plugin-aws-codeartifact`
 
-This is a Yarn v2 plugin that resolves authentication for AWS CodeArtifact NPM registries.
+This is a Yarn v3 plugin that resolves authentication for AWS CodeArtifact NPM registries.
+
+For Yarn v2 support, install [v0.7.6](https://github.com/mhassan1/yarn-plugin-aws-codeartifact/tree/v0.7.6) or earlier.
 
 ## Install
 

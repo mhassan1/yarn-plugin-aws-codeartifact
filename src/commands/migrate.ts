@@ -10,7 +10,8 @@ import URL from 'url'
  * Command to migrate a `yarn.lock` file to use AWS CodeArtifact repositories for relevant packages
  */
 export class MigrateCommand extends Command<CommandContext> {
-  @Command.Path('plugin-aws-codeartifact', 'migrate')
+  static paths = [['plugin-aws-codeartifact', 'migrate']]
+
   async execute(): Promise<0 | 1> {
     const configuration = await Configuration.find(this.context.cwd, this.context.plugins)
     const streamReport = await StreamReport.start(

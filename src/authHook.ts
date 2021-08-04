@@ -29,9 +29,21 @@ type TokenGenerator = (
  * TODO Use an appropriate plugin hook when one becomes available (https://github.com/yarnpkg/berry/issues/2067)
  */
 const _originalConfigurationFind = Configuration.find
+/* istanbul ignore next */
 Configuration.find = async function find(...args) {
   const configuration = await _originalConfigurationFind(...args)
-  await maybeSetAuthToken({ configuration })
+
+  // do not attempt to set the auth token in non-strict mode
+  // default configuration values are not available in non-strict mode
+  // it is used for getting just what is in `.yarnrc.yml`
+  // for example, https://github.com/yarnpkg/berry/blob/9f9fca071ad1c08ede5e0a2aa3a045fe782b8899/packages/plugin-dlx/sources/commands/dlx.ts#L57
+  // it will always be followed by a strict request
+  // for example, https://github.com/yarnpkg/berry/blob/9f9fca071ad1c08ede5e0a2aa3a045fe782b8899/packages/plugin-dlx/sources/commands/dlx.ts#L108
+  const strict = args[2]?.strict !== false
+  if (strict) {
+    await maybeSetAuthToken({ configuration })
+  }
+
   return configuration
 }
 
