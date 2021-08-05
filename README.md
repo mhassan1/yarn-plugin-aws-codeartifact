@@ -98,7 +98,7 @@ To verify the lock file updates and to download the packages from the AWS CodeAr
 
 ## How It Works
 
-This plugin hooks into Yarn v2 so that any `yarn` commands that may require fetching or publishing packages
+This plugin hooks into Yarn Berry so that any `yarn` commands that may require fetching or publishing packages
 to an AWS CodeArtifact registry will have an AWS CodeArtifact token generated right before.
 
 This is equivalent to setting the following `.yarnrc.yml` fields
