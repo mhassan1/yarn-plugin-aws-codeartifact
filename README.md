@@ -18,18 +18,25 @@ yarn plugin import https://raw.githubusercontent.com/mhassan1/yarn-plugin-aws-co
 # .yarnrc.yml
 
 npmRegistryServer: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
-# OR
 npmPublishRegistry: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
+npmAlwaysAuth: true
+
 # OR
+
 npmRegistries:
-  //domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/: {}
+  //domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/:
+    npmAlwaysAuth: true
+
 # OR
+
 npmScopes:
   my-scope:
     npmRegistryServer: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
-    # OR
     npmPublishRegistry: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
+    npmAlwaysAuth: true
 ```
+**IMPORTANT:** `npmAlwaysAuth: true` must be specified wherever a registry is defined.
+
 NOTE: If `publishConfig.registry` is specified in `package.json`,
 you must also specify that registry in `npmRegistries` in `.yarnrc.yml`.
 
@@ -101,12 +108,7 @@ To verify the lock file updates and to download the packages from the AWS CodeAr
 This plugin hooks into Yarn Berry so that any `yarn` commands that may require fetching or publishing packages
 to an AWS CodeArtifact registry will have an AWS CodeArtifact token generated right before.
 
-This is equivalent to setting the following `.yarnrc.yml` fields
-(they will be set only for the lifetime of the command and will not be persisted to any `.yarnrc.yml` file or anywhere else):
-```yaml
-npmAlwaysAuth: true
-npmAuthToken: # generated authorization token
-```
+It uses the [`getNpmAuthenticationHeader` hook](https://github.com/yarnpkg/berry/pull/2664).
 
 See `src/registryCommands.ts` for the list of supported `yarn` commands and the type of registry they require.
 NOTE: `lerna` commands are also supported, as long as they are run with `yarn lerna ...`.

@@ -1,4 +1,0 @@
-npmScopes:
-  scope-a:
-    npmRegistryServerConfig:
-      awsProfile: aws-profile-7

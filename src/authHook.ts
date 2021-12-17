@@ -1,4 +1,4 @@
-import { Configuration, miscUtils } from '@yarnpkg/core'
+import { Configuration, miscUtils, Ident } from '@yarnpkg/core'
 import { npmConfigUtils } from '@yarnpkg/plugin-npm'
 import { npath, PortablePath } from '@yarnpkg/fslib'
 import {
@@ -6,6 +6,7 @@ import {
   AuthorizationTokenParams,
   parseRegistryUrl,
   buildPluginConfig,
+  memoizePromise,
   PluginConfig,
   PluginRegistryConfig,
   getDefaultPluginRegistryConfig,
@@ -17,241 +18,175 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import { fromEnv } from '@aws-sdk/credential-provider-env'
 import { chain } from '@aws-sdk/property-provider'
 
-type RegistryConfigMap = Map<string, string | boolean>
 type TokenGenerator = (
   authorizationTokenParams: AuthorizationTokenParams,
   pluginRegistryConfig: PluginRegistryConfig | null
 ) => Promise<string>
 
-/**
- * Patch `Configuration.find` to call `maybeSetAuthToken`
- * Use `Configuration.find` for now because it is called on all commands
- * TODO Use an appropriate plugin hook when one becomes available (https://github.com/yarnpkg/berry/issues/2067)
- */
-const _originalConfigurationFind = Configuration.find
 /* istanbul ignore next */
-Configuration.find = async function find(...args) {
-  const configuration = await _originalConfigurationFind(...args)
-
-  // do not attempt to set the auth token in non-strict mode
-  // default configuration values are not available in non-strict mode
-  // it is used for getting just what is in `.yarnrc.yml`
-  // for example, https://github.com/yarnpkg/berry/blob/9f9fca071ad1c08ede5e0a2aa3a045fe782b8899/packages/plugin-dlx/sources/commands/dlx.ts#L57
-  // it will always be followed by a strict request
-  // for example, https://github.com/yarnpkg/berry/blob/9f9fca071ad1c08ede5e0a2aa3a045fe782b8899/packages/plugin-dlx/sources/commands/dlx.ts#L108
-  const strict = args[2]?.strict !== false
-  if (strict) {
-    await maybeSetAuthToken({ configuration })
-  }
-
-  return configuration
-}
-
 /**
- * For all AWS CodeArtifact registries in the configuration, set an auth token on the registry if:
- * - we recognize the registry as an AWS CodeArtifact registry
- * - AND an auth token is not already set for that registry
- * - AND we recognize the `yarn` command as one requiring a registry
+ * Yarn `getNpmAuthenticationHeader` hook
+ * https://github.com/yarnpkg/berry/pull/2664
  *
- * @param {Configuration} configuration - Yarn configuration
- * @returns {Promise<void>}
+ * @param {string | undefined} _currentHeader - Current header value
+ * @param {string} registry - Registry URL
+ * @param {{configuration: Configuration, ident: Ident}} context - Yarn configuration and package identifier
+ * @returns {Promise<string | undefined>} Authentication header, if applicable
  */
-const maybeSetAuthToken = async ({ configuration }: { configuration: Configuration }) => {
-  const registryType: npmConfigUtils.RegistryType | null = getRegistryTypeForCommand()
-  // not a command that requires a registry
-  if (registryType === null) return
+export const getNpmAuthenticationHeader = async (
+  _currentHeader: string | undefined,
+  registry: string,
+  { configuration, ident }: { configuration: Configuration; ident: Ident }
+): Promise<string | undefined> => {
+  const initializeResult = await initializePlugin(configuration)
+  if (initializeResult === null) return
 
-  const pluginConfigStartingCwd = getPluginConfigStartingCwd(configuration)
+  const { pluginConfig, registryType } = initializeResult
 
-  await maybeSetAuthorizationTokensForRegistries(
-    configuration,
-    pluginConfigStartingCwd,
+  const authToken = await computeAuthToken(
+    registry,
+    ident?.scope || null,
     registryType,
+    pluginConfig,
     getAuthorizationToken
   )
+  if (authToken === null) return
+
+  return `Bearer ${authToken}`
 }
 
+/* istanbul ignore next */
+/**
+ * Initialize the plugin as a singleton
+ * This function is memoized and can be called repeatedly safely
+ *
+ * @param {Configuration} configuration - Yarn configuration
+ * @returns {Promise<{ pluginConfig: PluginConfig, registryType: npmConfigUtils.RegistryType } | null>} - Plugin configuration, if found
+ */
+const initializePlugin = memoizePromise(
+  async (
+    configuration: Configuration
+  ): Promise<{ pluginConfig: PluginConfig; registryType: npmConfigUtils.RegistryType } | null> => {
+    const registryType = getRegistryTypeForCommand()
+    if (registryType === null) return null
+
+    const pluginConfigStartingCwd = getPluginConfigStartingCwd(configuration)
+
+    const pluginConfig = await buildPluginConfig(pluginConfigStartingCwd)
+
+    return { pluginConfig, registryType }
+  },
+  () => 'singleton'
+)
+
+/**
+ * For a given registry and optional scope, compute an auth token for the registry if:
+ * - we recognize the registry as an AWS CodeArtifact registry
+ * - AND an auth token has not already been computed for that registry, scope, and type
+ *
+ * @param {string} registry - Registry URL
+ * @param {string | null} scope - Package scope
+ * @param {PluginConfig} pluginConfig - Package scope
+ * @param {npmConfigUtils.RegistryType} registryType - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
+ * @param {TokenGenerator} tokenGenerator - Function that generates authorization tokens
+ * @returns {Promise<string | null>} Authorization token retrieved from AWS CodeArtifact, if applicable
+ */
+export const computeAuthToken = memoizePromise(
+  async (
+    registry: string,
+    scope: string | null,
+    registryType: npmConfigUtils.RegistryType,
+    pluginConfig: PluginConfig,
+    tokenGenerator: TokenGenerator
+  ): Promise<string | null> => {
+    const authorizationTokenParams: AuthorizationTokenParams | null = parseRegistryUrl(registry)
+
+    // not an AWS CodeArtifact registry
+    if (authorizationTokenParams === null) return null
+
+    const pluginRegistryConfig =
+      (scope && getScopePluginRegistryConfig(scope, pluginConfig, registryType)) ||
+      getPluginRegistryConfig(registry, pluginConfig) ||
+      getDefaultPluginRegistryConfig(pluginConfig, registryType)
+
+    // no configuration found
+    if (pluginRegistryConfig === null) return null
+
+    return tokenGenerator(authorizationTokenParams, pluginRegistryConfig)
+  },
+  (registry, scope, registryType) => JSON.stringify({ registry, scope, registryType })
+)
+
+/* istanbul ignore next */
 /**
  * Retrieve an authorization token from AWS CodeArtifact
+ * This function is memoized
  *
  * @param {AuthorizationTokenParams} authorizationTokenParams - Parameters required to retrieve a token from AWS CodeArtifact (https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CodeArtifact.html#getAuthorizationToken-property)
  * @param {PluginRegistryConfig | null} pluginRegistryConfig - Configuration of this registry instance for the AWS SDK
  * @returns {Promise<string>} Authorization token retrieved from AWS CodeArtifact
  */
-const getAuthorizationToken = async (
-  authorizationTokenParams: AuthorizationTokenParams,
-  pluginRegistryConfig: PluginRegistryConfig | null
-): Promise<string> => {
-  const { domain, domainOwner, region } = authorizationTokenParams
-  const { awsProfile, preferAwsEnvironmentCredentials } = pluginRegistryConfig || {
-    awsProfile: undefined,
-    preferAwsEnvironmentCredentials: false
-  }
+const getAuthorizationToken = memoizePromise(
+  async (
+    authorizationTokenParams: AuthorizationTokenParams,
+    pluginRegistryConfig: PluginRegistryConfig | null
+  ): Promise<string> => {
+    const { domain, domainOwner, region } = authorizationTokenParams
+    const { awsProfile, preferAwsEnvironmentCredentials } = pluginRegistryConfig || {
+      awsProfile: undefined,
+      preferAwsEnvironmentCredentials: false
+    }
 
-  // for testing purposes only
-  if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
-    return ['~~', domain, domainOwner, region, awsProfile, preferAwsEnvironmentCredentials, '~~'].join('~')
-  }
+    let authorizationToken
 
-  const _defaultProvider = defaultProvider({
-    // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
-    // `awsProfile` that is `undefined` should be excluded
-    ...(awsProfile !== undefined ? { profile: awsProfile } : {})
-  })
+    // for testing purposes only
+    if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
+      authorizationToken = ['~~', domain, domainOwner, region, awsProfile, preferAwsEnvironmentCredentials, '~~'].join(
+        '~'
+      )
+    } else {
+      const _defaultProvider = defaultProvider({
+        // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
+        // `awsProfile` that is `undefined` should be excluded
+        ...(awsProfile !== undefined ? { profile: awsProfile } : {})
+      })
 
-  const credentials = miscUtils.parseOptionalBoolean(preferAwsEnvironmentCredentials)
-    ? chain(fromEnv(), _defaultProvider)
-    : _defaultProvider
+      const credentials = miscUtils.parseOptionalBoolean(preferAwsEnvironmentCredentials)
+        ? chain(fromEnv(), _defaultProvider)
+        : _defaultProvider
 
-  const client = new Codeartifact({
-    region,
-    credentials
-  })
-  const params = {
-    domain,
-    domainOwner,
-    // this should be more than enough time to complete the command
-    // we are not persisting this token anywhere once the command is complete
-    // https://docs.aws.amazon.com/codeartifact/latest/APIReference/API_GetAuthorizationToken.html#API_GetAuthorizationToken_RequestSyntax
-    durationSeconds: 900 // 15 minutes
-  }
-  const { authorizationToken } = await client.getAuthorizationToken(params)
-  if (!authorizationToken) {
-    throw new Error('AWS CodeArtifact Authorization token returned undefined')
-  }
-  return authorizationToken
-}
+      const client = new Codeartifact({
+        region,
+        credentials
+      })
+      const params = {
+        domain,
+        domainOwner,
+        // this should be more than enough time to complete the command
+        // we are not persisting this token anywhere once the command is complete
+        // https://docs.aws.amazon.com/codeartifact/latest/APIReference/API_GetAuthorizationToken.html#API_GetAuthorizationToken_RequestSyntax
+        durationSeconds: 900 // 15 minutes
+      }
+      authorizationToken = (await client.getAuthorizationToken(params)).authorizationToken
+    }
 
-/**
- * For all unique AWS CodeArtifact registries in the configuration, generate an authorization token and put it in the configuration
- *
- * @param {Configuration} configuration - Yarn configuration
- * @param {PortablePath} pluginConfigStartingCwd - Starting directory for searching for plugin configuration files
- * @param {npmConfigUtils.RegistryType} registryType - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
- * @param {TokenGenerator} tokenGenerator - Function that generates authorization tokens
- * @returns {Promise<void>}
- */
-export const maybeSetAuthorizationTokensForRegistries = async (
-  configuration: Configuration,
-  pluginConfigStartingCwd: PortablePath,
-  registryType: npmConfigUtils.RegistryType,
-  tokenGenerator: TokenGenerator
-): Promise<void> => {
-  const pluginConfig: PluginConfig = await buildPluginConfig(pluginConfigStartingCwd)
-
-  // default registry
-  const defaultRegistry: string = npmConfigUtils.getDefaultRegistry({
-    configuration,
-    type: registryType
-  })
-  const defaultPluginRegistryConfig: PluginRegistryConfig | null = getDefaultPluginRegistryConfig(
-    pluginConfig,
-    registryType
-  )
-  await maybeSetAuthorizationTokenForRegistry(
-    defaultRegistry,
-    defaultPluginRegistryConfig,
-    configuration.values,
-    tokenGenerator
-  )
-
-  // `npmRegistries` map
-  // we don't know which ones might be used, so authenticate all of them
-  const npmRegistriesMap: Map<string, RegistryConfigMap> = configuration.values.get('npmRegistries')
-  for (const [npmRegistriesKey, registryConfigMap] of npmRegistriesMap.entries()) {
-    // registries without a protocol are supported here
-    // normalize these by adding a protocol and removing the trailing slash
-    const registry = npmRegistriesKey.startsWith('//') ? `https:${npmRegistriesKey}` : npmRegistriesKey
-    const pluginRegistryConfig: PluginRegistryConfig | null = getPluginRegistryConfig(npmRegistriesKey, pluginConfig)
-    await maybeSetAuthorizationTokenForRegistry(
-      npmConfigUtils.normalizeRegistry(registry),
-      pluginRegistryConfig,
-      registryConfigMap,
-      tokenGenerator
-    )
-  }
-
-  // `npmScopes` map
-  // we don't know which ones might be used, so authenticate all of them
-  const npmScopesMap: Map<string, RegistryConfigMap> = configuration.values.get('npmScopes')
-  for (const [scope, registryConfigMap] of npmScopesMap.entries()) {
-    const registry = npmConfigUtils.getScopeRegistry(scope, {
-      configuration,
-      type: registryType
-    })
-    const pluginRegistryConfig: PluginRegistryConfig | null = getScopePluginRegistryConfig(
-      scope,
-      pluginConfig,
-      registryType
-    )
-    await maybeSetAuthorizationTokenForRegistry(registry, pluginRegistryConfig, registryConfigMap, tokenGenerator)
-  }
-}
-
-/**
- * Map that stores mappings of (registry + plugin registry configuration) -> authToken
- */
-const authTokenMap: Map<string, string> = new Map()
-
-/**
- * For a given registry, if it's an AWS CodeArtifact registry, generate an authorization token if we haven't already generated one for this registry, and set it in the configuration
- *
- * @param {string} registry - NPM Registry URL
- * @param {PluginRegistryConfig} pluginRegistryConfig - Configuration of this registry instance for the AWS SDK
- * @param {RegistryConfigMap} registryConfigMap - Registry configuration map from Yarn configuration
- * @param {TokenGenerator} tokenGenerator - Function that generates authorization tokens
- * @returns {Promise<void>}
- */
-const maybeSetAuthorizationTokenForRegistry = async (
-  registry: string,
-  pluginRegistryConfig: PluginRegistryConfig | null,
-  registryConfigMap: RegistryConfigMap,
-  tokenGenerator: TokenGenerator
-): Promise<void> => {
-  // skip this registry configuration if it already has a token set
-  if (registryConfigMap.get('npmAuthToken')) return
-
-  const authTokenMapKey = JSON.stringify({
-    registry,
-    ...(pluginRegistryConfig || {})
-  })
-
-  // don't bother retrieving an auth token if we already have one for this registry and profile
-  if (!authTokenMap.has(authTokenMapKey)) {
-    const authorizationTokenParams: AuthorizationTokenParams | null = parseRegistryUrl(registry)
-    // not an AWS CodeArtifact registry
-    if (authorizationTokenParams === null) return
-
-    const authorizationToken: string = await tokenGenerator(authorizationTokenParams, pluginRegistryConfig)
+    if (!authorizationToken) {
+      throw new Error('AWS CodeArtifact Authorization token returned undefined')
+    }
 
     if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG) {
       // TODO use a LightReport to write this to STDOUT, being careful to check for the `--json` flag from the user
       console.log(
-        `_YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG: Setting token for registry ${registry} with config ${JSON.stringify(
-          pluginRegistryConfig
-        )} to ${authorizationToken}`
+        `_YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG: Retrieved token for authorization parameters ${JSON.stringify(
+          authorizationTokenParams
+        )} with config ${JSON.stringify(pluginRegistryConfig)}: ${authorizationToken}`
       )
     }
 
-    // stash the token so we can re-use if we encounter this registry again
-    authTokenMap.set(authTokenMapKey, authorizationToken)
-  }
-
-  setAuthConfiguration(registryConfigMap, authTokenMap.get(authTokenMapKey) as string)
-}
-
-/**
- * Set an authorization token into a registry configuration
- *
- * @param {RegistryConfigMap} registryConfigMap - Registry configuration map from Yarn configuration
- * @param {string} authorizationToken - Authorization token retrieved from AWS CodeArtifact
- * @returns {void}
- */
-const setAuthConfiguration = (registryConfigMap: RegistryConfigMap, authorizationToken: string) => {
-  // set these values in memory, to be used by Yarn
-  registryConfigMap.set('npmAlwaysAuth', true)
-  registryConfigMap.set('npmAuthToken', authorizationToken)
-}
+    return authorizationToken
+  },
+  (authorizationTokenParams, pluginRegistryConfig) => JSON.stringify({ authorizationTokenParams, pluginRegistryConfig })
+)
 
 /**
  * Determine the starting directory for searching for plugin configuration files

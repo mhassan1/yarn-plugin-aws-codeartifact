@@ -204,7 +204,7 @@ type ConfigFile = {
  * @param {npmConfigUtils.RegistryType} type - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
  * @returns {string} - Plugin registry configuration key (`npmRegistryServerConfig` or `npmPublishRegistryConfig`)
  */
-const computePluginRegistryConfigKey = (type: npmConfigUtils.RegistryType): string => {
+export const computePluginRegistryConfigKey = (type: npmConfigUtils.RegistryType): string => {
   return `${type}Config`
 }
 
@@ -234,7 +234,13 @@ export const getDefaultPluginRegistryConfig = (
  * @returns {PluginRegistryConfig | null} Plugin registry configuration
  */
 export const getPluginRegistryConfig = (registry: string, pluginConfig: PluginConfig): PluginRegistryConfig | null => {
-  return get(pluginConfig, ['npmRegistries', registry]) || null
+  const normalizedRegistry = registry.replace(/\/$/, '')
+
+  return (
+    get(pluginConfig, ['npmRegistries', normalizedRegistry]) ||
+    get(pluginConfig, ['npmRegistries', normalizedRegistry.replace(/^[a-z]+:/, '')]) ||
+    null
+  )
 }
 
 /**
@@ -253,4 +259,30 @@ export const getScopePluginRegistryConfig = (
   const scopeConfig = get(pluginConfig, ['npmScopes', scope]) || null
   if (scopeConfig === null) return getDefaultPluginRegistryConfig(pluginConfig, type)
   return get(scopeConfig, [computePluginRegistryConfigKey(type)]) || getDefaultPluginRegistryConfig(pluginConfig, type)
+}
+
+/**
+ * Memoize an async function
+ *
+ * @param {(...args: any[]) => Promise} fn - Async function
+ * @param {(...args: any[]) => string} keyFn - Cache key generation function
+ * @returns {(...args: any[]) => Promise} Memoized async function
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const memoizePromise = <T, F extends (...args: readonly any[]) => Promise<T>>(
+  fn: F,
+  keyFn: (...args: Parameters<F>) => string
+): F => {
+  const promiseCache = new Map<string, Promise<T>>()
+  return ((...args: Parameters<F>) => {
+    const key = keyFn(...args)
+
+    if (promiseCache.has(key)) {
+      return promiseCache.get(key)
+    }
+
+    const promise = fn(...args)
+    promiseCache.set(key, promise)
+    return promise
+  }) as F
 }
