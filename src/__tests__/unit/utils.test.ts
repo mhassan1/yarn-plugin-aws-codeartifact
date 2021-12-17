@@ -6,6 +6,7 @@ import {
   arrayStartsWith,
   parseRegistryUrl,
   buildPluginConfig,
+  memoizePromise,
   PluginConfig,
   getDefaultPluginRegistryConfig,
   getPluginRegistryConfig,
@@ -176,5 +177,43 @@ describe('getScopePluginRegistryConfig', () => {
       awsProfile: 'aws-profile-2'
     })
     expect(getScopePluginRegistryConfig('scope-z', {} as PluginConfig, PUBLISH_REGISTRY)).toStrictEqual(null)
+  })
+})
+
+describe('memoizePromise', () => {
+  it('should memoize a function that returns a resolved promise', async () => {
+    let count = 0
+    const fn = memoizePromise(
+      async (str: string): Promise<string> => {
+        count++
+        return str
+      },
+      (str) => str
+    )
+
+    await expect(fn('hi')).resolves.toBe('hi')
+    expect(count).toBe(1)
+    await expect(fn('hi')).resolves.toBe('hi')
+    expect(count).toBe(1)
+    await expect(fn('there')).resolves.toBe('there')
+    expect(count).toBe(2)
+  })
+
+  it('should memoize a function that returns a rejected promise', async () => {
+    let count = 0
+    const fn = memoizePromise(
+      async (str: string): Promise<never> => {
+        count++
+        throw new Error(str)
+      },
+      (str) => str
+    )
+
+    await expect(fn('hi')).rejects.toThrow('hi')
+    expect(count).toBe(1)
+    await expect(fn('hi')).rejects.toThrow('hi')
+    expect(count).toBe(1)
+    await expect(fn('there')).rejects.toThrow('there')
+    expect(count).toBe(2)
   })
 })

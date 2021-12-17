@@ -6,7 +6,9 @@ const env = {
   _YARN_PLUGIN_AWS_CODEARTIFACT_DEBUG: 'true'
 }
 const expectedRegex = (awsProfile: string) =>
-  new RegExp(`Setting token for registry .+ to ~~~domain-test~000000000000~us-east-1~${awsProfile}~true~~~`)
+  new RegExp(
+    `Retrieved token for authorization parameters .+ ~~~domain-test~000000000000~us-east-1~${awsProfile}~true~~~`
+  )
 
 describe('commands that require a registry', () => {
   it('should retrieve authorization tokens for AWS CodeArtifact registries', () => {
@@ -49,6 +51,6 @@ describe("commands that don't require a registry", () => {
       cwd,
       env
     }).toString()
-    expect(stdout).not.toMatch(/Setting token for registry/)
+    expect(stdout).not.toMatch(/Retrieved token for authorization parameters/)
   })
 })
