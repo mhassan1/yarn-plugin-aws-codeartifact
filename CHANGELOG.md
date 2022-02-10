@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.2] - 2022-02-10
+[0.9.2]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.9.1...v0.9.2
+
+- Bump vulnerable dependencies
+
 ## [0.9.1] - 2022-02-10
 [0.9.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.9.0...v0.9.1
 
