@@ -192,15 +192,13 @@ const getAuthorizationToken = memoizePromise(
  * Determine the starting directory for searching for plugin configuration files
  *
  * @param {Configuration} configuration - Yarn configuration
- * @param {string[]} argv - CLI arguments
  * @returns {PortablePath} Starting directory for searching for plugin configuration files
  */
-export const getPluginConfigStartingCwd = (
-  configuration: Configuration,
-  argv: string[] = process.argv.slice(2)
-): PortablePath => {
+export const getPluginConfigStartingCwd = (configuration: Configuration): PortablePath => {
   // for `dlx` commands, `configuration.startingCwd` will be a temporary directory (not the project directory)
   // the temporary directory contains a copy of the project's `.yarnrc.yml` file but does not contain the plugin configuration file
   // in that case, use `process.cwd()` so we start looking for plugin configuration files from where the command is run
-  return argv[0] === 'dlx' ? npath.toPortablePath(process.cwd()) : configuration.startingCwd
+  // https://github.com/yarnpkg/berry/blob/4f88b35c90695fb83c296b57f64cbf8dd2f88a9a/packages/plugin-dlx/sources/commands/dlx.ts#L47
+  const isDlx = !!configuration.projectCwd?.endsWith(`dlx-${process.pid}`)
+  return isDlx ? npath.toPortablePath(process.cwd()) : configuration.startingCwd
 }

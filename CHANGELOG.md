@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.1] - 2022-02-10
+[0.9.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.9.0...v0.9.1
+
+- Fixed: Detect `yarn dlx` commands more robustly
+
 ## [0.9.0] - 2021-12-17
 [0.9.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.8.0...v0.9.0
 

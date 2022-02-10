@@ -103,9 +103,13 @@ describe('getPluginConfigStartingCwd', () => {
     const configuration = {
       startingCwd: '/a/b/c' as PortablePath
     } as Configuration
-    expect(getPluginConfigStartingCwd(configuration, ['install'])).toBe(configuration.startingCwd)
-    expect(getPluginConfigStartingCwd(configuration, ['dlx', 'node-bin-example'])).toBe(
-      npath.toPortablePath(process.cwd())
-    )
+    expect(getPluginConfigStartingCwd(configuration)).toBe(configuration.startingCwd)
+  })
+
+  it('should determine the starting directory for plugin configuration files when using `dlx`', () => {
+    const configuration = {
+      projectCwd: `/x/dlx-${process.pid}` as PortablePath
+    } as Configuration
+    expect(getPluginConfigStartingCwd(configuration)).toBe(npath.toPortablePath(process.cwd()))
   })
 })
