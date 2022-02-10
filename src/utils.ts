@@ -264,9 +264,9 @@ export const getScopePluginRegistryConfig = (
 /**
  * Memoize an async function
  *
- * @param {(...args: any[]) => Promise} fn - Async function
- * @param {(...args: any[]) => string} keyFn - Cache key generation function
- * @returns {(...args: any[]) => Promise} Memoized async function
+ * @param {() => Promise} fn - Async function
+ * @param {() => string} keyFn - Cache key generation function
+ * @returns {() => Promise} Memoized async function
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const memoizePromise = <T, F extends (...args: readonly any[]) => Promise<T>>(
