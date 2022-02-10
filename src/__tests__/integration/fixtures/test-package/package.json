@@ -1,4 +1,7 @@
 {
+  "workspaces": [
+    "my-workspace"
+  ],
   "scripts": {
     "echo": "echo hi"
   }
