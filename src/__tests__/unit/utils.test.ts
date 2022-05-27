@@ -7,6 +7,7 @@ import {
   parseRegistryUrl,
   buildPluginConfig,
   memoizePromise,
+  augmentConfigFile,
   PluginConfig,
   getDefaultPluginRegistryConfig,
   getPluginRegistryConfig,
@@ -79,7 +80,11 @@ describe('buildPluginConfig', () => {
       },
       npmPublishRegistryConfig: {
         awsProfile: 'aws-profile-2',
-        preferAwsEnvironmentCredentials: 'true'
+        preferAwsEnvironmentCredentials: 'true',
+        preAuthCommand: JSON.stringify({
+          command: `printf 'pwd --> ' && pwd`,
+          cwd: ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures' as PortablePath)
+        })
       },
       npmScopes: {
         'my-scope': {
@@ -215,5 +220,65 @@ describe('memoizePromise', () => {
     expect(count).toBe(1)
     await expect(fn('there')).rejects.toThrow('there')
     expect(count).toBe(2)
+  })
+})
+
+describe('augmentConfigFile', () => {
+  it('should augment a config file', () => {
+    const configFile = {
+      cwd: '/' as PortablePath,
+      path: '/.yarn-plugin-aws-codeartifact.yml' as PortablePath,
+      data: {
+        npmRegistryServerConfig: {
+          awsProfile: 'p1'
+        },
+        npmPublishRegistryConfig: {
+          awsProfile: 'p2'
+        },
+        npmScopes: {
+          s1: {
+            npmRegistryServerConfig: {
+              awsProfile: 'p3'
+            },
+            npmPublishRegistryConfig: {
+              awsProfile: 'p4'
+            }
+          }
+        },
+        npmRegistries: {
+          g1: {
+            awsProfile: 'p5'
+          }
+        }
+      }
+    }
+
+    augmentConfigFile((pluginRegistryConfig, { cwd }) => {
+      pluginRegistryConfig.awsProfile += cwd
+    })(configFile)
+
+    expect(configFile.data).toEqual({
+      npmRegistryServerConfig: {
+        awsProfile: 'p1/'
+      },
+      npmPublishRegistryConfig: {
+        awsProfile: 'p2/'
+      },
+      npmScopes: {
+        s1: {
+          npmRegistryServerConfig: {
+            awsProfile: 'p3/'
+          },
+          npmPublishRegistryConfig: {
+            awsProfile: 'p4/'
+          }
+        }
+      },
+      npmRegistries: {
+        g1: {
+          awsProfile: 'p5/'
+        }
+      }
+    })
   })
 })

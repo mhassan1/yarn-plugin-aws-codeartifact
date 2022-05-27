@@ -20,6 +20,7 @@ describe('commands that require a registry', () => {
       env
     }).toString()
     expect(stdout).toMatch(expectedRegex('aws-profile-2'))
+    expect(stdout).toContain(`pwd --> ${join(__dirname, 'fixtures')}\n`)
   })
 
   it('should retrieve authorization tokens for AWS CodeArtifact registries when using "dlx"', () => {

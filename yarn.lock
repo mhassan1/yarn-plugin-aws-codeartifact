@@ -8447,6 +8447,7 @@ __metadata:
     "@yarnpkg/parsers": ^2.4.1
     "@yarnpkg/plugin-npm": ^2.6.0
     "@yarnpkg/plugin-pack": ^3.1.0
+    "@yarnpkg/shell": ^3.1.0
     clipanion: ^3.1.0
     eslint: ^8.8.0
     eslint-plugin-jsdoc: ^37.8.2

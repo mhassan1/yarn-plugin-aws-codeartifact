@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.0] - 2022-05-27
+[0.10.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.9.2...v0.10.0
+
+- Added: Add support for `preAuthCommand`
+
 ## [0.9.2] - 2022-02-10
 [0.9.2]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.9.1...v0.9.2
 
