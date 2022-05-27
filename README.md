@@ -74,7 +74,7 @@ where `PluginRegistryConfig` contains the following properties:
   * By default, if `awsProfile` is provided, AWS SDK v3 will look for that profile only and fail if it doesn't exist on the machine.
   * Set this flag to check for environment variable credentials first, and only attempt to use the profile if credentials are not provided by environment variables.
   * This flag is useful in the scenario where developers will use profiles but CI environments will use environment variables.
-* `preAuthCommand` - Command to run before authenticating to AWS
+* `preAuthCommand` - Command to run before authenticating to AWS (optional)
   * The command will run relative to the directory where it's defined
 ```yaml
 # PluginRegistryConfig
@@ -87,6 +87,10 @@ awsProfile: aws-profile
 # Set this to `true` to first check for AWS credentials provided by environment variables (i.e. `AWS_ACCESS_KEY_ID`);
 #   
 preferAwsEnvironmentCredentials: true
+
+# Command to run before authenticating to AWS, relative to the directory where it's defined (optional)
+# 
+preAuthCommand: log-me-in
 ```
 
 ## Migration
