@@ -194,8 +194,7 @@ const readPluginConfigFile = async (folder: PortablePath): Promise<ConfigFile | 
 type ConfigFile = {
   path: PortablePath
   cwd: PortablePath
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any
+  data: PluginConfig
 }
 
 /**
