@@ -104,7 +104,18 @@ export const buildPluginConfig = async (startingCwd: PortablePath): Promise<Plug
   if (homeConfigFile !== null) {
     configFiles.push(homeConfigFile)
   }
-  const configData = configFiles.map(({ data }) => data)
+  const configData = configFiles
+    .map(
+      augmentConfigFile((pluginRegistryConfig, { cwd }) => {
+        if (pluginRegistryConfig.preAuthCommand) {
+          pluginRegistryConfig.preAuthCommand = JSON.stringify({
+            command: pluginRegistryConfig.preAuthCommand,
+            cwd
+          })
+        }
+      })
+    )
+    .map(({ data }) => data)
   return defaultsDeep({}, ...configData)
 }
 
@@ -126,6 +137,7 @@ export type PluginRegistryConfig = {
   awsProfile: string
   // plugin configuration values are always interpreted as string
   preferAwsEnvironmentCredentials?: BooleanString
+  preAuthCommand?: string
 }
 
 type BooleanString = 'true' | 'false'
@@ -285,3 +297,33 @@ export const memoizePromise = <T, F extends (...args: readonly any[]) => Promise
     return promise
   }) as F
 }
+
+/**
+ * Augment a config file via an `augment` callback
+ *
+ * @param {Function} augment Augment function
+ * @returns {Function} Map functionConfigFile
+ */
+export const augmentConfigFile =
+  (augment: (pluginRegistryConfig: PluginRegistryConfig, configFile: ConfigFile) => void) =>
+  (configFile: ConfigFile): ConfigFile => {
+    const pluginConfig = configFile.data
+    if (pluginConfig.npmRegistryServerConfig) {
+      augment(pluginConfig.npmRegistryServerConfig, configFile)
+    }
+    if (pluginConfig.npmPublishRegistryConfig) {
+      augment(pluginConfig.npmPublishRegistryConfig, configFile)
+    }
+    if (pluginConfig.npmScopes) {
+      Object.values(pluginConfig.npmScopes).forEach(({ npmRegistryServerConfig, npmPublishRegistryConfig }) => {
+        if (npmRegistryServerConfig) augment(npmRegistryServerConfig, configFile)
+        if (npmPublishRegistryConfig) augment(npmPublishRegistryConfig, configFile)
+      })
+    }
+    if (pluginConfig.npmRegistries) {
+      Object.values(pluginConfig.npmRegistries).forEach((pluginRegistryConfig) => {
+        if (pluginRegistryConfig) augment(pluginRegistryConfig, configFile)
+      })
+    }
+    return configFile
+  }

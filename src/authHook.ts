@@ -1,6 +1,7 @@
 import { Configuration, miscUtils, Ident } from '@yarnpkg/core'
 import { npmConfigUtils } from '@yarnpkg/plugin-npm'
 import { npath, PortablePath } from '@yarnpkg/fslib'
+import { execute } from '@yarnpkg/shell'
 import {
   getRegistryTypeForCommand,
   AuthorizationTokenParams,
@@ -132,9 +133,18 @@ const getAuthorizationToken = memoizePromise(
     pluginRegistryConfig: PluginRegistryConfig | null
   ): Promise<string> => {
     const { domain, domainOwner, region } = authorizationTokenParams
-    const { awsProfile, preferAwsEnvironmentCredentials } = pluginRegistryConfig || {
+    const { awsProfile, preferAwsEnvironmentCredentials, preAuthCommand } = pluginRegistryConfig || {
       awsProfile: undefined,
       preferAwsEnvironmentCredentials: false
+    }
+
+    if (preAuthCommand) {
+      // `preAuthCommand` was turned into JSON as part of `buildPluginConfig`
+      const { command, cwd } = JSON.parse(preAuthCommand)
+      const exitCode = await execute(command, [], { cwd })
+      if (exitCode) {
+        throw new Error('The `preAuthCommand` failed, see output above.')
+      }
     }
 
     let authorizationToken
