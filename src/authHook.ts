@@ -110,9 +110,6 @@ export const computeAuthToken = memoizePromise(
       getPluginRegistryConfig(registry, pluginConfig) ||
       getDefaultPluginRegistryConfig(pluginConfig, registryType)
 
-    // no configuration found
-    if (pluginRegistryConfig === null) return null
-
     return tokenGenerator(authorizationTokenParams, pluginRegistryConfig)
   },
   (registry, scope, registryType) => JSON.stringify({ registry, scope, registryType })

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.10.1] - 2022-07-20
+[0.10.1]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.10.0...v0.10.1
+
+- Fixed: Don't require plugin config to be provided
+
 ## [0.10.0] - 2022-05-27
 [0.10.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.9.2...v0.10.0
 
