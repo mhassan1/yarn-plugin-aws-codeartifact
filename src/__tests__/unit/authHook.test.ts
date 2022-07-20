@@ -60,41 +60,42 @@ describe('computeAuthToken', () => {
 
     expect(tokenGeneratorCallCount).toBe(0)
 
+    // The given profile wasn't used because the regsitry was in correct
     expect(await computeAuthToken(awsCodeArtifactRegistry1, null, FETCH_REGISTRY, pluginConfig, tokenGenerator)).toBe(
-      null
+      'test-token-1-null'
     )
-
-    expect(tokenGeneratorCallCount).toBe(0)
+    expect(tokenGeneratorCallCount).toBe(1)
 
     expect(await computeAuthToken(awsCodeArtifactRegistry2, null, FETCH_REGISTRY, pluginConfig, tokenGenerator)).toBe(
       'test-token-2-aws-profile-2'
     )
 
-    expect(tokenGeneratorCallCount).toBe(1)
+    expect(tokenGeneratorCallCount).toBe(2)
 
     expect(await computeAuthToken(awsCodeArtifactRegistry3, null, FETCH_REGISTRY, pluginConfig, tokenGenerator)).toBe(
       'test-token-3-aws-profile-3'
     )
 
-    expect(tokenGeneratorCallCount).toBe(2)
-
-    expect(
-      await computeAuthToken(awsCodeArtifactRegistry1, 'scope-a', FETCH_REGISTRY, pluginConfig, tokenGenerator)
-    ).toBe('test-token-1-aws-profile-scope-a')
-
     expect(tokenGeneratorCallCount).toBe(3)
 
     expect(
       await computeAuthToken(awsCodeArtifactRegistry1, 'scope-a', FETCH_REGISTRY, pluginConfig, tokenGenerator)
     ).toBe('test-token-1-aws-profile-scope-a')
 
-    expect(tokenGeneratorCallCount).toBe(3)
+    expect(tokenGeneratorCallCount).toBe(4)
 
+    expect(
+      await computeAuthToken(awsCodeArtifactRegistry1, 'scope-a', FETCH_REGISTRY, pluginConfig, tokenGenerator)
+    ).toBe('test-token-1-aws-profile-scope-a')
+
+    expect(tokenGeneratorCallCount).toBe(4)
+
+    // Should just use the default configuration
     expect(
       await computeAuthToken(awsCodeArtifactRegistry1, 'scope-b', FETCH_REGISTRY, pluginConfig, tokenGenerator)
-    ).toBe(null)
+    ).toBe('test-token-1-null')
 
-    expect(tokenGeneratorCallCount).toBe(3)
+    expect(tokenGeneratorCallCount).toBe(5)
   })
 })
 
