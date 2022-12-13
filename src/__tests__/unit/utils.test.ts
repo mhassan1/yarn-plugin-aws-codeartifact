@@ -82,7 +82,7 @@ describe('buildPluginConfig', () => {
         awsProfile: 'aws-profile-2',
         preferAwsEnvironmentCredentials: 'true',
         preAuthCommand: JSON.stringify({
-          command: `printf 'pwd --> ' && pwd`,
+          command: `node -p "'pwd --> ' + process.cwd()"`,
           cwd: ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures' as PortablePath)
         })
       },
