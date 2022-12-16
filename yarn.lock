@@ -179,7 +179,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sts@npm:3.50.0":
+"@aws-sdk/client-sts@npm:3.50.0, @aws-sdk/client-sts@npm:^3.50.0":
   version: 3.50.0
   resolution: "@aws-sdk/client-sts@npm:3.50.0"
   dependencies:
@@ -8432,6 +8432,7 @@ __metadata:
   resolution: "yarn-plugin-aws-codeartifact@workspace:."
   dependencies:
     "@aws-sdk/client-codeartifact": ^3.50.0
+    "@aws-sdk/client-sts": ^3.50.0
     "@aws-sdk/credential-provider-env": ^3.50.0
     "@aws-sdk/credential-provider-node": ^3.50.0
     "@aws-sdk/property-provider": ^3.50.0
