@@ -3,7 +3,7 @@ node_js:
   - lts/*
   - node
 os: linux
-dist: focal
+dist: jammy
 arch: arm64
 cache:
   directories:
