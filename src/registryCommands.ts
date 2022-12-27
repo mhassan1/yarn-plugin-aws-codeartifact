@@ -130,7 +130,7 @@ export const registryCommands: RegistryCommand[] = [
  * @param {string[]} positionalArgs - Positional arguments (e.g. `['add', 'moment']` in `yarn add moment`)
  * @returns {RegistryCommand} Found registry command
  */
-export const findRegistryCommand = (positionalArgs: string[]): RegistryCommand | null => {
+export const findRegistryCommand = (positionalArgs: (string | number)[]): RegistryCommand | null => {
   return (
     registryCommands.find(({ positionalArgs: commandPositionalArgs }) => {
       return arrayStartsWith(positionalArgs, ...commandPositionalArgs)

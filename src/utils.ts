@@ -34,7 +34,7 @@ export const getRegistryTypeForCommand = (
   argv: string[] = process.argv.slice(2)
 ): npmConfigUtils.RegistryType | null => {
   const yargsParserOutput = parser(argv)
-  const { _: positionalArgs }: { _: string[] } = yargsParserOutput
+  const { _: positionalArgs } = yargsParserOutput
 
   // `yarn` by itself is the same as `yarn install`
   if (!positionalArgs.length) {
