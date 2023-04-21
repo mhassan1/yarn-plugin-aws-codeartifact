@@ -1,6 +1,0 @@
-
-npmRegistryServer: https://domain-test-000000000000.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/
-
-npmScopes:
-  types:
-    npmRegistryServer: https://domain-test-111111111111.d.codeartifact.us-east-1.amazonaws.com/npm/repo-test/

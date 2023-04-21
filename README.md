@@ -93,22 +93,6 @@ preferAwsEnvironmentCredentials: true
 preAuthCommand: log-me-in
 ```
 
-## Migration
-
-To migrate an existing `yarn.lock` file from NPM to AWS CodeArtifact,
-run `yarn plugin-aws-codeartifact migrate`, then `yarn`.
-
-For each lock file entry:
-1. If it's not an NPM protocol entry, skip it
-2. If it's not using the default NPM registry, skip it
-3. If it's a scoped package and `npmScopes.<scope>.npmRegistryServer` is an AWS CodeArtifact registry,
-   modify the entry to use that registry
-4. If `npmRegistryServer` is an AWS CodeArtifact registry,
-   modify the entry to use that registry
-
-The `migrate` command itself only modifies the `yarn.lock` file.
-To verify the lock file updates and to download the packages from the AWS CodeArtifact registry, run `yarn`.
-
 ## How It Works
 
 This plugin hooks into Yarn Berry so that any `yarn` commands that may require fetching or publishing packages
