@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.14.0] - 2023-06-06
+[0.14.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.13.0...v0.14.0
+
+- Bump `@aws-sdk/*` dependencies
+
 ## [0.13.0] - 2023-04-21
 [0.13.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.12.0...v0.13.0
 
