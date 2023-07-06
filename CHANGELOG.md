@@ -3,7 +3,7 @@
 ## [0.15.0] - 2023-07-05
 [0.15.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.14.0...v0.15.0
 
-- Drop support for `node < 16`
+- Bump dependencies
 
 ## [0.14.0] - 2023-06-06
 [0.14.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.13.0...v0.14.0
