@@ -45,6 +45,10 @@ export const getNpmAuthenticationHeader = async (
 
   const { pluginConfig, registryType } = initializeResult
 
+  if (isRunningInDependabot()) {
+      return
+  }
+
   const authToken = await computeAuthToken(
     registry,
     ident?.scope || null,
@@ -55,6 +59,17 @@ export const getNpmAuthenticationHeader = async (
   if (authToken === null) return
 
   return `Bearer ${authToken}`
+}
+
+// Dependabot relies on this env variable so it's existence points to the fact
+// that we are running such an environment. See
+// https://github.com/dependabot/dependabot-core/blob/23de1c7583117bd15f26ab33482383ed57208f14/updater/lib/dependabot/environment.rb#L6
+//
+// Dependabot doesn't support passing environment variables. We can only pass the
+// token for the registry in a special dependabot.yaml config file. So this plugin
+// will never work for it, just skip the token calculation and configure it separately.
+const isRunningInDependabot = (): boolean => {
+    return process.env.DEPENDABOT_JOB_ID !== undefined
 }
 
 /* istanbul ignore next */
