@@ -46,7 +46,7 @@ export const getNpmAuthenticationHeader = async (
   const { pluginConfig, registryType } = initializeResult
 
   if (isRunningInDependabot()) {
-      return
+    return
   }
 
   const authToken = await computeAuthToken(
@@ -69,7 +69,7 @@ export const getNpmAuthenticationHeader = async (
 // token for the registry in a special dependabot.yaml config file. So this plugin
 // will never work for it, just skip the token calculation and configure it separately.
 const isRunningInDependabot = (): boolean => {
-    return process.env.DEPENDABOT_JOB_ID !== undefined
+  return process.env.DEPENDABOT_JOB_ID !== undefined
 }
 
 /* istanbul ignore next */
