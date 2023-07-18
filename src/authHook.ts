@@ -45,9 +45,9 @@ export const getNpmAuthenticationHeader = async (
 
   const { pluginConfig, registryType } = initializeResult
 
-  const codeArtifactEnvToken = process.env.CODEARTIFACT_TOKEN;
-  if (codeArtifactEnvToken) {
-    return `Bearer ${codeArtifactEnvToken}`;
+  // Runs in dependabot environment
+  if (process.env.DEPENDABOT_JOB_ID) {
+      return
   }
 
   const authToken = await computeAuthToken(
