@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.16.0] - 2023-07-18
+[0.16.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.15.0...v0.16.0
+
+- Skip authentication in Dependabot
+
 ## [0.15.0] - 2023-07-05
 [0.15.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.14.0...v0.15.0
 
