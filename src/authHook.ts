@@ -45,6 +45,11 @@ export const getNpmAuthenticationHeader = async (
 
   const { pluginConfig, registryType } = initializeResult
 
+  const codeArtifactEnvToken = process.env.CODEARTIFACT_TOKEN;
+  if (codeArtifactEnvToken) {
+    return `Bearer ${codeArtifactEnvToken}`;
+  }
+
   const authToken = await computeAuthToken(
     registry,
     ident?.scope || null,
