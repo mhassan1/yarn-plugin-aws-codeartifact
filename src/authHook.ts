@@ -46,7 +46,10 @@ export const getNpmAuthenticationHeader = async (
   const { pluginConfig, registryType } = initializeResult
 
   if (isRunningInDependabot()) {
-    return
+    // return a dummy header to prevent `No authentication configured for request`
+    // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
+    // the dependabot proxy will replace the dummy header with a valid one before calling the registry
+    return `Bearer dummy-token`
   }
 
   const authToken = await computeAuthToken(
