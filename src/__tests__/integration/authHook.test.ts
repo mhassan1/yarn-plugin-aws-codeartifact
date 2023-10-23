@@ -15,7 +15,7 @@ describe('commands that require a registry', () => {
     const cwd = join(__dirname, 'fixtures', 'test-package')
     // `yarn npm audit` requires a `PUBLISH_REGISTRY`, which is an AWS CodeArtifact registry
     // this command will fail because this is not a real AWS CodeArtifact repository, but it's okay to ignore for this test
-    const stdout = execSync('yarn npm audit || exit 0', {
+    const stdout = execSync('yarn npm tag add my-pkg@2.3.4-beta.4 beta || exit 0', {
       cwd,
       env
     }).toString()
