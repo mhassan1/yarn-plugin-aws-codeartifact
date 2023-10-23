@@ -1,6 +1,9 @@
 # `yarn-plugin-aws-codeartifact`
 
-This is a Yarn v3 plugin that resolves authentication for AWS CodeArtifact NPM registries.
+This is a Yarn v4 plugin that resolves authentication for AWS CodeArtifact NPM registries.
+
+For Yarn v3 support, install [v0.16.1](https://github.com/mhassan1/yarn-plugin-aws-codeartifact/tree/v0.16.1) or earlier
+(down to [v0.8.0](https://github.com/mhassan1/yarn-plugin-aws-codeartifact/tree/v0.8.0)).
 
 For Yarn v2 support, install [v0.7.6](https://github.com/mhassan1/yarn-plugin-aws-codeartifact/tree/v0.7.6) or earlier.
 
@@ -80,16 +83,16 @@ where `PluginRegistryConfig` contains the following properties:
 # PluginRegistryConfig
 
 # Name of the AWS Profile to use for this registry.
-# 
+#
 awsProfile: aws-profile
 
 # By default, if `awsProfile` is provided, AWS SDK v3 will look for that profile and fail if it doesn't exist on the machine.
 # Set this to `true` to first check for AWS credentials provided by environment variables (i.e. `AWS_ACCESS_KEY_ID`);
-#   
+#
 preferAwsEnvironmentCredentials: true
 
 # Command to run before authenticating to AWS, relative to the directory where it's defined (optional)
-# 
+#
 preAuthCommand: log-me-in
 ```
 
