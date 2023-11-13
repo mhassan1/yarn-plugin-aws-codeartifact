@@ -70,9 +70,5 @@
     "ts-jest": "^29.1.1",
     "typescript": "~5.1.6"
   },
-  "resolutions": {
-    "cmake-js/yargs": "^16.2.0",
-    "cmake-js/npmlog": "^6.0.1"
-  },
   "packageManager": "yarn@4.0.0"
 }
