@@ -10,7 +10,7 @@ For Yarn v2 support, install [v0.7.6](https://github.com/mhassan1/yarn-plugin-aw
 ## Install
 
 ```
-yarn plugin import https://raw.githubusercontent.com/mhassan1/yarn-plugin-aws-codeartifact/v0.17.0/bundles/@yarnpkg/plugin-aws-codeartifact.js
+yarn plugin import https://raw.githubusercontent.com/mhassan1/yarn-plugin-aws-codeartifact/v0.18.0/bundles/@yarnpkg/plugin-aws-codeartifact.js
 ```
 
 ## Usage
