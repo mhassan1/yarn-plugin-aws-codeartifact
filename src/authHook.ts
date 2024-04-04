@@ -147,38 +147,50 @@ const getAuthorizationToken = memoizePromise(
       }
     }
 
-    let authorizationToken
-
     // for testing purposes only
     if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
-      authorizationToken = ['~~', domain, domainOwner, region, awsProfile, preferAwsEnvironmentCredentials, '~~'].join(
-        '~'
-      )
-    } else {
-      const _defaultProvider = decorateDefaultCredentialProvider(defaultProvider)({
-        // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
-        // `awsProfile` that is `undefined` should be excluded
-        ...(awsProfile !== undefined ? { profile: awsProfile } : {})
-      })
-
-      const credentials = miscUtils.parseOptionalBoolean(preferAwsEnvironmentCredentials)
-        ? chain(fromEnv(), _defaultProvider)
-        : _defaultProvider
-
-      const client = new Codeartifact({
-        region,
-        credentials
-      })
-      const params = {
+      const testAuthorizationToken = [
+        '~~',
         domain,
         domainOwner,
-        // this should be more than enough time to complete the command
-        // we are not persisting this token anywhere once the command is complete
-        // https://docs.aws.amazon.com/codeartifact/latest/APIReference/API_GetAuthorizationToken.html#API_GetAuthorizationToken_RequestSyntax
-        durationSeconds: 900 // 15 minutes
-      }
-      authorizationToken = (await client.getAuthorizationToken(params)).authorizationToken
+        region,
+        awsProfile,
+        preferAwsEnvironmentCredentials,
+        '~~'
+      ].join('~')
+
+      console.log(
+        `_YARN_PLUGIN_AWS_CODEARTIFACT_TESTING: Retrieved token for authorization parameters ${JSON.stringify(
+          authorizationTokenParams
+        )} with config ${JSON.stringify(pluginRegistryConfig)}: ${testAuthorizationToken}`
+      )
+
+      return testAuthorizationToken
     }
+
+    const _defaultProvider = decorateDefaultCredentialProvider(defaultProvider)({
+      // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
+      // `awsProfile` that is `undefined` should be excluded
+      ...(awsProfile !== undefined ? { profile: awsProfile } : {})
+    })
+
+    const credentials = miscUtils.parseOptionalBoolean(preferAwsEnvironmentCredentials)
+      ? chain(fromEnv(), _defaultProvider)
+      : _defaultProvider
+
+    const client = new Codeartifact({
+      region,
+      credentials
+    })
+    const params = {
+      domain,
+      domainOwner,
+      // this should be more than enough time to complete the command
+      // we are not persisting this token anywhere once the command is complete
+      // https://docs.aws.amazon.com/codeartifact/latest/APIReference/API_GetAuthorizationToken.html#API_GetAuthorizationToken_RequestSyntax
+      durationSeconds: 900 // 15 minutes
+    }
+    const authorizationToken = (await client.getAuthorizationToken(params)).authorizationToken
 
     if (!authorizationToken) {
       throw new Error('AWS CodeArtifact Authorization token returned undefined')
@@ -224,15 +236,18 @@ const isRunningInDependabot: boolean = process.env.DEPENDABOT_JOB_ID !== undefin
 
 // In some environments you may want to use an existing auth token instead of fetching a new one
 // This is an escape hatch for that case
-const useExistingAuthtoken: boolean = process.env.YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE !== undefined
+const useExistingAuthtoken: boolean = process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE !== undefined
 
 const skipPlugin: boolean = isRunningInDependabot || useExistingAuthtoken
+
+export const SKIP_PLUGIN_ERROR = 'CODEARTIFACT_AUTH_TOKEN is not set; cannot use _YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE'
 const skipPluginToken = () => {
   if (useExistingAuthtoken) {
     const existingAuthToken = process.env.CODEARTIFACT_AUTH_TOKEN
     if (!existingAuthToken) {
-      throw new Error('CODEARTIFACT_AUTH_TOKEN is not set; cannot use YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE')
+      throw new Error(SKIP_PLUGIN_ERROR)
     }
+    console.log(`_YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE: Use passed in token: ${existingAuthToken}`)
     return `Bearer ${existingAuthToken}`
   }
 

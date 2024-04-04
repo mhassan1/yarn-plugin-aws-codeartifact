@@ -102,7 +102,7 @@ Dependabot does not support this plugin. So, if there is a DEPENDABOT_JOB_ID env
 return a `dummy-token` for the AWS CodeArtifact token. This is to prevent Dependabot from failing.
 
 If you have any other environment that you want to bypass the plugin, you can set the
-`YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE=*` and the plugin will return the current env's
+`_YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE=*` and the plugin will return the current env's
 `CODEARTIFACT_AUTH_TOKEN` (required to work).
 
 ## How It Works
