@@ -4,7 +4,7 @@ import {
   DEPENDABOT_DUMMY_TOKEN,
   getPluginConfigStartingCwd,
   SKIP_PLUGIN_ERROR,
-  skipPluginToken
+  skipPlugin
 } from '../../authHook'
 import { Configuration } from '@yarnpkg/core'
 import { npath, PortablePath } from '@yarnpkg/fslib'
@@ -131,17 +131,17 @@ describe('skipPluginTokenGeneration', () => {
 
   it('should return dummy token when it is Dependabot', () => {
     process.env.DEPENDABOT_JOB_ID = '*'
-    expect(skipPluginToken()).toBe(`Bearer ${DEPENDABOT_DUMMY_TOKEN}`)
+    expect(skipPlugin()).toBe(`Bearer ${DEPENDABOT_DUMMY_TOKEN}`)
   })
 
   it('should return existing CODEARTIFACT_AUTH_TOKEN as Bearer when present', () => {
     process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE = '*'
     process.env.CODEARTIFACT_AUTH_TOKEN = 'TEST_CODEARTIFACT_AUTH_TOKEN'
-    expect(skipPluginToken()).toBe(`Bearer ${process.env.CODEARTIFACT_AUTH_TOKEN}`)
+    expect(skipPlugin()).toBe(`Bearer ${process.env.CODEARTIFACT_AUTH_TOKEN}`)
   })
 
   it('should return false when _YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE is not set', () => {
     process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE = '*'
-    expect(() => skipPluginToken()).toThrowError(SKIP_PLUGIN_ERROR)
+    expect(() => skipPlugin()).toThrowError(SKIP_PLUGIN_ERROR)
   })
 })

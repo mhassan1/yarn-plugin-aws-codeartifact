@@ -41,7 +41,7 @@ export const getNpmAuthenticationHeader = async (
   registry: string,
   { configuration, ident }: { configuration: Configuration; ident: Ident }
 ): Promise<string | undefined> => {
-  if (skipPlugin()) return skipPluginToken()
+  if (shouldSkipPlugin()) return skipPlugin()
 
   const initializeResult = await initializePlugin(configuration)
   if (initializeResult === null) return
@@ -239,11 +239,11 @@ const isRunningInDependabot = (): boolean => process.env.DEPENDABOT_JOB_ID !== u
 // This is an escape hatch for that case
 const useExistingAuthtoken = (): boolean => process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE !== undefined
 
-const skipPlugin = (): boolean => isRunningInDependabot() || useExistingAuthtoken()
+const shouldSkipPlugin = (): boolean => isRunningInDependabot() || useExistingAuthtoken()
 
 export const SKIP_PLUGIN_ERROR = 'CODEARTIFACT_AUTH_TOKEN is not set; cannot use _YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE'
 export const DEPENDABOT_DUMMY_TOKEN = 'dummy-token'
-export const skipPluginToken = () => {
+export const skipPlugin = () => {
   if (isRunningInDependabot()) {
     // return a dummy header to prevent `No authentication configured for request`
     // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
