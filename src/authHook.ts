@@ -40,17 +40,12 @@ export const getNpmAuthenticationHeader = async (
   registry: string,
   { configuration, ident }: { configuration: Configuration; ident: Ident }
 ): Promise<string | undefined> => {
+  if (skipPlugin) return skipPluginToken()
+
   const initializeResult = await initializePlugin(configuration)
   if (initializeResult === null) return
 
   const { pluginConfig, registryType } = initializeResult
-
-  if (isRunningInDependabot()) {
-    // return a dummy header to prevent `No authentication configured for request`
-    // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
-    // the dependabot proxy will replace the dummy header with a valid one before calling the registry
-    return `Bearer dummy-token`
-  }
 
   const authToken = await computeAuthToken(
     registry,
@@ -62,17 +57,6 @@ export const getNpmAuthenticationHeader = async (
   if (authToken === null) return
 
   return `Bearer ${authToken}`
-}
-
-// Dependabot relies on this env variable so it's existence points to the fact
-// that we are running such an environment. See
-// https://github.com/dependabot/dependabot-core/blob/23de1c7583117bd15f26ab33482383ed57208f14/updater/lib/dependabot/environment.rb#L6
-//
-// Dependabot doesn't support passing environment variables. We can only pass the
-// token for the registry in a special dependabot.yaml config file. So this plugin
-// will never work for it, just skip the token calculation and configure it separately.
-const isRunningInDependabot = (): boolean => {
-  return process.env.DEPENDABOT_JOB_ID !== undefined
 }
 
 /* istanbul ignore next */
@@ -227,4 +211,33 @@ export const getPluginConfigStartingCwd = (configuration: Configuration): Portab
   // https://github.com/yarnpkg/berry/blob/4f88b35c90695fb83c296b57f64cbf8dd2f88a9a/packages/plugin-dlx/sources/commands/dlx.ts#L47
   const isDlx = !!configuration.projectCwd?.endsWith(`dlx-${process.pid}`)
   return isDlx ? npath.toPortablePath(process.cwd()) : configuration.startingCwd
+}
+
+// Dependabot relies on this env variable so it's existence points to the fact
+// that we are running such an environment. See
+// https://github.com/dependabot/dependabot-core/blob/23de1c7583117bd15f26ab33482383ed57208f14/updater/lib/dependabot/environment.rb#L6
+//
+// Dependabot doesn't support passing environment variables. We can only pass the
+// token for the registry in a special dependabot.yaml config file. So this plugin
+// will never work for it, just skip the token calculation and configure it separately.
+const isRunningInDependabot: boolean = process.env.DEPENDABOT_JOB_ID !== undefined
+
+// In some environments you may want to use an existing auth token instead of fetching a new one
+// This is an escape hatch for that case
+const useExistingAuthtoken: boolean = process.env.YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE !== undefined
+
+const skipPlugin: boolean = isRunningInDependabot || useExistingAuthtoken
+const skipPluginToken = () => {
+  if (useExistingAuthtoken) {
+    const existingAuthToken = process.env.CODEARTIFACT_AUTH_TOKEN
+    if (!existingAuthToken) {
+      throw new Error('CODEARTIFACT_AUTH_TOKEN is not set; cannot use YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE')
+    }
+    return `Bearer ${existingAuthToken}`
+  }
+
+  // return a dummy header to prevent `No authentication configured for request`
+  // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
+  // the dependabot proxy will replace the dummy header with a valid one before calling the registry
+  return `Bearer dummy-token`
 }
