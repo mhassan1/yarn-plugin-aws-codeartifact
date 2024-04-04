@@ -19,6 +19,7 @@ import { decorateDefaultCredentialProvider } from '@aws-sdk/client-sts'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import { fromEnv } from '@aws-sdk/credential-provider-env'
 import { chain } from '@aws-sdk/property-provider'
+import process from 'process'
 
 type TokenGenerator = (
   authorizationTokenParams: AuthorizationTokenParams,
@@ -40,7 +41,7 @@ export const getNpmAuthenticationHeader = async (
   registry: string,
   { configuration, ident }: { configuration: Configuration; ident: Ident }
 ): Promise<string | undefined> => {
-  if (skipPlugin) return skipPluginToken()
+  if (skipPlugin()) return skipPluginToken()
 
   const initializeResult = await initializePlugin(configuration)
   if (initializeResult === null) return
@@ -232,27 +233,34 @@ export const getPluginConfigStartingCwd = (configuration: Configuration): Portab
 // Dependabot doesn't support passing environment variables. We can only pass the
 // token for the registry in a special dependabot.yaml config file. So this plugin
 // will never work for it, just skip the token calculation and configure it separately.
-const isRunningInDependabot: boolean = process.env.DEPENDABOT_JOB_ID !== undefined
+const isRunningInDependabot = (): boolean => process.env.DEPENDABOT_JOB_ID !== undefined
 
 // In some environments you may want to use an existing auth token instead of fetching a new one
 // This is an escape hatch for that case
-const useExistingAuthtoken: boolean = process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE !== undefined
+const useExistingAuthtoken = (): boolean => process.env._YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE !== undefined
 
-const skipPlugin: boolean = isRunningInDependabot || useExistingAuthtoken
+const skipPlugin = (): boolean => isRunningInDependabot() || useExistingAuthtoken()
 
 export const SKIP_PLUGIN_ERROR = 'CODEARTIFACT_AUTH_TOKEN is not set; cannot use _YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE'
-const skipPluginToken = () => {
-  if (useExistingAuthtoken) {
+export const DEPENDABOT_DUMMY_TOKEN = 'dummy-token'
+export const skipPluginToken = () => {
+  if (isRunningInDependabot()) {
+    // return a dummy header to prevent `No authentication configured for request`
+    // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
+    // the dependabot proxy will replace the dummy header with a valid one before calling the registry
+    return `Bearer ${DEPENDABOT_DUMMY_TOKEN}`
+  }
+  if (useExistingAuthtoken()) {
     const existingAuthToken = process.env.CODEARTIFACT_AUTH_TOKEN
-    if (!existingAuthToken) {
-      throw new Error(SKIP_PLUGIN_ERROR)
+
+    if (!existingAuthToken) throw new Error(SKIP_PLUGIN_ERROR)
+
+    if (process.env._YARN_PLUGIN_AWS_CODEARTIFACT_TESTING) {
+      console.log(`_YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE: Use passed in token: ${existingAuthToken}`)
     }
-    console.log(`_YARN_PLUGIN_AWS_CODEARTIFACT_DISABLE: Use passed in token: ${existingAuthToken}`)
+
     return `Bearer ${existingAuthToken}`
   }
 
-  // return a dummy header to prevent `No authentication configured for request`
-  // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
-  // the dependabot proxy will replace the dummy header with a valid one before calling the registry
-  return `Bearer dummy-token`
+  throw Error('This function should not be called if the plugin is not skipped')
 }
