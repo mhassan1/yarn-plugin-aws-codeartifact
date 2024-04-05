@@ -129,6 +129,15 @@ export const computeAuthToken = memoizePromise(
       getPluginRegistryConfig(registry, pluginConfig) ||
       getDefaultPluginRegistryConfig(pluginConfig, registryType)
 
+    const { skipCommand } = pluginRegistryConfig || {}
+
+    if (skipCommand) {
+      // `skipCommand` was turned into JSON as part of `buildPluginConfig`
+      const { command, cwd } = JSON.parse(skipCommand)
+      const exitCode = await execute(command, [], { cwd })
+      if (!exitCode) return null
+    }
+
     return tokenGenerator(authorizationTokenParams, pluginRegistryConfig)
   },
   (registry, scope, registryType) => JSON.stringify({ registry, scope, registryType })

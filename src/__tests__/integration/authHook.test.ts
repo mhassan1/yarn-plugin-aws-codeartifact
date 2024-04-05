@@ -13,7 +13,7 @@ const expectedRegex = (awsProfile: string) =>
 describe('commands that require a registry', () => {
   it('should retrieve authorization tokens for AWS CodeArtifact registries', () => {
     const cwd = join(__dirname, 'fixtures', 'test-package')
-    // `yarn npm audit` requires a `PUBLISH_REGISTRY`, which is an AWS CodeArtifact registry
+    // `yarn npm tag` requires a `PUBLISH_REGISTRY`, which is an AWS CodeArtifact registry
     // this command will fail because this is not a real AWS CodeArtifact repository, but it's okay to ignore for this test
     const stdout = execSync('yarn npm tag add my-pkg@2.3.4-beta.4 beta || exit 0', {
       cwd,
@@ -21,6 +21,8 @@ describe('commands that require a registry', () => {
     }).toString()
     expect(stdout).toMatch(expectedRegex('aws-profile-2'))
     expect(stdout).toContain(`pwd --> ${join(__dirname, 'fixtures')}\n`)
+    expect(stdout).toContain('not skipping...\n')
+    expect(stdout).not.toContain('skipping!!!\n')
   })
 
   it('should retrieve authorization tokens for AWS CodeArtifact registries when using "dlx"', () => {
@@ -53,6 +55,23 @@ describe('commands that require a registry', () => {
       env
     }).toString()
     expect(stdout).not.toMatch(expectedRegex('aws-profile-2'))
+  })
+
+  it('should not retrieve authorization tokens when `skipCommand` exits zero', () => {
+    const cwd = join(__dirname, 'fixtures', 'test-package')
+    // `yarn npm tag` requires a `PUBLISH_REGISTRY`, which is an AWS CodeArtifact registry
+    // this command will fail because this is not a real AWS CodeArtifact repository, but it's okay to ignore for this test
+    const stdout = execSync('yarn npm tag add my-pkg@2.3.4-beta.4 beta || exit 0', {
+      cwd,
+      env: {
+        ...env,
+        SKIP_IT: 'true'
+      }
+    }).toString()
+    expect(stdout).not.toMatch(expectedRegex('aws-profile-2'))
+    expect(stdout).not.toContain(`pwd --> ${join(__dirname, 'fixtures')}\n`)
+    expect(stdout).not.toContain('not skipping...\n')
+    expect(stdout).toContain('skipping!!!\n')
   })
 })
 
