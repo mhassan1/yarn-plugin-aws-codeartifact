@@ -1,6 +1,6 @@
 {
   "name": "yarn-plugin-aws-codeartifact",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "Yarn Berry plugin that resolves authentication for AWS CodeArtifact NPM registries",
   "main": "src/index.ts",
   "repository": {
