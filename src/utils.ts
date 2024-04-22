@@ -107,6 +107,13 @@ export const buildPluginConfig = async (startingCwd: PortablePath): Promise<Plug
   const configData = configFiles
     .map(
       augmentConfigFile((pluginRegistryConfig, { cwd }) => {
+        if (pluginRegistryConfig.skipCommand) {
+          pluginRegistryConfig.skipCommand = JSON.stringify({
+            command: pluginRegistryConfig.skipCommand,
+            cwd
+          })
+        }
+
         if (pluginRegistryConfig.preAuthCommand) {
           pluginRegistryConfig.preAuthCommand = JSON.stringify({
             command: pluginRegistryConfig.preAuthCommand,
@@ -137,6 +144,7 @@ export type PluginRegistryConfig = {
   awsProfile: string
   // plugin configuration values are always interpreted as string
   preferAwsEnvironmentCredentials?: BooleanString
+  skipCommand?: string
   preAuthCommand?: string
 }
 

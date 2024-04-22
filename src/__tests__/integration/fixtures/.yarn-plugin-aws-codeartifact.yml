@@ -1,4 +1,6 @@
 npmPublishRegistryConfig:
   awsProfile: aws-profile-2
   preferAwsEnvironmentCredentials: true
+  skipCommand: |-
+    node -e "process.exitCode = process.env.SKIP_IT === 'true' ? (console.log('skipping!!!') ?? 0) : (console.log('not skipping...') ?? 1)"
   preAuthCommand: node -p "'pwd --> ' + process.cwd()"

@@ -81,6 +81,10 @@ describe('buildPluginConfig', () => {
       npmPublishRegistryConfig: {
         awsProfile: 'aws-profile-2',
         preferAwsEnvironmentCredentials: 'true',
+        skipCommand: JSON.stringify({
+          command: `node -e "process.exitCode = process.env.SKIP_IT === 'true' ? (console.log('skipping!!!') ?? 0) : (console.log('not skipping...') ?? 1)"`,
+          cwd: ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures' as PortablePath)
+        }),
         preAuthCommand: JSON.stringify({
           command: `node -p "'pwd --> ' + process.cwd()"`,
           cwd: ppath.join(pluginRootDir, 'src/__tests__/integration/fixtures' as PortablePath)
