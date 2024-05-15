@@ -22,6 +22,9 @@ export const registryCommands: RegistryCommand[] = [
     positionalArgs: ['add']
   },
   {
+    positionalArgs: ['create']
+  },
+  {
     positionalArgs: ['dedupe']
   },
   {
