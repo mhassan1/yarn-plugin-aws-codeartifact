@@ -15,7 +15,6 @@ import {
   getScopePluginRegistryConfig
 } from './utils'
 import { Codeartifact } from '@aws-sdk/client-codeartifact'
-import { decorateDefaultCredentialProvider } from '@aws-sdk/client-sts'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import { fromEnv } from '@aws-sdk/credential-provider-env'
 import { chain } from '@aws-sdk/property-provider'
@@ -180,7 +179,7 @@ const getAuthorizationToken = memoizePromise(
         '~'
       )
     } else {
-      const _defaultProvider = decorateDefaultCredentialProvider(defaultProvider)({
+      const _defaultProvider = defaultProvider({
         // `awsProfile` that is any value (including `null` and `''`) should be provided as-is
         // `awsProfile` that is `undefined` should be excluded
         ...(awsProfile !== undefined ? { profile: awsProfile } : {})
