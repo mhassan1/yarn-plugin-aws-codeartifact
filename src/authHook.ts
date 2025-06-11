@@ -28,7 +28,6 @@ type TokenGenerator = (
 /**
  * Yarn `getNpmAuthenticationHeader` hook
  * https://github.com/yarnpkg/berry/pull/2664
- *
  * @param {string | undefined} _currentHeader - Current header value
  * @param {string} registry - Registry URL
  * @param {{configuration: Configuration, ident: Ident}} context - Yarn configuration and package identifier
@@ -78,7 +77,6 @@ const isRunningInDependabot = (): boolean => {
 /**
  * Initialize the plugin as a singleton
  * This function is memoized and can be called repeatedly safely
- *
  * @param {Configuration} configuration - Yarn configuration
  * @returns {Promise<{ pluginConfig: PluginConfig, registryType: npmConfigUtils.RegistryType } | null>} - Plugin configuration, if found
  */
@@ -102,7 +100,6 @@ const initializePlugin = memoizePromise(
  * For a given registry and optional scope, compute an auth token for the registry if:
  * - we recognize the registry as an AWS CodeArtifact registry
  * - AND an auth token has not already been computed for that registry, scope, and type
- *
  * @param {string} registry - Registry URL
  * @param {string | null} scope - Package scope
  * @param {PluginConfig} pluginConfig - Package scope
@@ -146,7 +143,6 @@ export const computeAuthToken = memoizePromise(
 /**
  * Retrieve an authorization token from AWS CodeArtifact
  * This function is memoized
- *
  * @param {AuthorizationTokenParams} authorizationTokenParams - Parameters required to retrieve a token from AWS CodeArtifact (https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CodeArtifact.html#getAuthorizationToken-property)
  * @param {PluginRegistryConfig | null} pluginRegistryConfig - Configuration of this registry instance for the AWS SDK
  * @returns {Promise<string>} Authorization token retrieved from AWS CodeArtifact
@@ -224,7 +220,6 @@ const getAuthorizationToken = memoizePromise(
 
 /**
  * Determine the starting directory for searching for plugin configuration files
- *
  * @param {Configuration} configuration - Yarn configuration
  * @returns {PortablePath} Starting directory for searching for plugin configuration files
  */
