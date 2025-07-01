@@ -38,28 +38,33 @@ export const getNpmAuthenticationHeader = async (
   registry: string,
   { configuration, ident }: { configuration: Configuration; ident: Ident }
 ): Promise<string | undefined> => {
-  const initializeResult = await initializePlugin(configuration)
-  if (initializeResult === null) return
+  try {
+    const initializeResult = await initializePlugin(configuration)
+    if (initializeResult === null) return
 
-  const { pluginConfig, registryType } = initializeResult
+    const { pluginConfig, registryType } = initializeResult
 
-  if (isRunningInDependabot()) {
-    // return a dummy header to prevent `No authentication configured for request`
-    // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
-    // the dependabot proxy will replace the dummy header with a valid one before calling the registry
-    return `Bearer dummy-token`
+    if (isRunningInDependabot()) {
+      // return a dummy header to prevent `No authentication configured for request`
+      // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
+      // the dependabot proxy will replace the dummy header with a valid one before calling the registry
+      return `Bearer dummy-token`
+    }
+
+    const authToken = await computeAuthToken(
+      registry,
+      ident?.scope || null,
+      registryType,
+      pluginConfig,
+      getAuthorizationToken
+    )
+    if (authToken === null) return
+
+    return `Bearer ${authToken}`
+  } catch (err) {
+    // @ts-expect-error Expected 0-1 arguments, but got 2.
+    throw new Error(`An error was encountered in the AWS CodeArtifact Yarn Plugin (${err})`, { cause: err })
   }
-
-  const authToken = await computeAuthToken(
-    registry,
-    ident?.scope || null,
-    registryType,
-    pluginConfig,
-    getAuthorizationToken
-  )
-  if (authToken === null) return
-
-  return `Bearer ${authToken}`
 }
 
 // Dependabot relies on this env variable so it's existence points to the fact
