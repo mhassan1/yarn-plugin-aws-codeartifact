@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.23.0] - 2025-07-01
+[0.23.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.22.0...v0.23.0
+
+- Added: Wrap plugin errors with helpful message
+
 ## [0.22.0] - 2024-07-30
 [0.22.0]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.21.0...v0.22.0
 
