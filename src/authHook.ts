@@ -28,7 +28,6 @@ type TokenGenerator = (
 /**
  * Yarn `getNpmAuthenticationHeader` hook
  * https://github.com/yarnpkg/berry/pull/2664
- *
  * @param {string | undefined} _currentHeader - Current header value
  * @param {string} registry - Registry URL
  * @param {{configuration: Configuration, ident: Ident}} context - Yarn configuration and package identifier
@@ -39,28 +38,33 @@ export const getNpmAuthenticationHeader = async (
   registry: string,
   { configuration, ident }: { configuration: Configuration; ident: Ident }
 ): Promise<string | undefined> => {
-  const initializeResult = await initializePlugin(configuration)
-  if (initializeResult === null) return
+  try {
+    const initializeResult = await initializePlugin(configuration)
+    if (initializeResult === null) return
 
-  const { pluginConfig, registryType } = initializeResult
+    const { pluginConfig, registryType } = initializeResult
 
-  if (isRunningInDependabot()) {
-    // return a dummy header to prevent `No authentication configured for request`
-    // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
-    // the dependabot proxy will replace the dummy header with a valid one before calling the registry
-    return `Bearer dummy-token`
+    if (isRunningInDependabot()) {
+      // return a dummy header to prevent `No authentication configured for request`
+      // see https://github.com/yarnpkg/berry/blob/ad8c95d3bd597966b4669d5fff13a95deab550af/packages/plugin-npm/sources/npmHttpUtils.ts#L384
+      // the dependabot proxy will replace the dummy header with a valid one before calling the registry
+      return `Bearer dummy-token`
+    }
+
+    const authToken = await computeAuthToken(
+      registry,
+      ident?.scope || null,
+      registryType,
+      pluginConfig,
+      getAuthorizationToken
+    )
+    if (authToken === null) return
+
+    return `Bearer ${authToken}`
+  } catch (err) {
+    // @ts-expect-error Expected 0-1 arguments, but got 2.
+    throw new Error(`An error was encountered in the AWS CodeArtifact Yarn Plugin (${err})`, { cause: err })
   }
-
-  const authToken = await computeAuthToken(
-    registry,
-    ident?.scope || null,
-    registryType,
-    pluginConfig,
-    getAuthorizationToken
-  )
-  if (authToken === null) return
-
-  return `Bearer ${authToken}`
 }
 
 // Dependabot relies on this env variable so it's existence points to the fact
@@ -78,7 +82,6 @@ const isRunningInDependabot = (): boolean => {
 /**
  * Initialize the plugin as a singleton
  * This function is memoized and can be called repeatedly safely
- *
  * @param {Configuration} configuration - Yarn configuration
  * @returns {Promise<{ pluginConfig: PluginConfig, registryType: npmConfigUtils.RegistryType } | null>} - Plugin configuration, if found
  */
@@ -102,7 +105,6 @@ const initializePlugin = memoizePromise(
  * For a given registry and optional scope, compute an auth token for the registry if:
  * - we recognize the registry as an AWS CodeArtifact registry
  * - AND an auth token has not already been computed for that registry, scope, and type
- *
  * @param {string} registry - Registry URL
  * @param {string | null} scope - Package scope
  * @param {PluginConfig} pluginConfig - Package scope
@@ -146,7 +148,6 @@ export const computeAuthToken = memoizePromise(
 /**
  * Retrieve an authorization token from AWS CodeArtifact
  * This function is memoized
- *
  * @param {AuthorizationTokenParams} authorizationTokenParams - Parameters required to retrieve a token from AWS CodeArtifact (https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CodeArtifact.html#getAuthorizationToken-property)
  * @param {PluginRegistryConfig | null} pluginRegistryConfig - Configuration of this registry instance for the AWS SDK
  * @returns {Promise<string>} Authorization token retrieved from AWS CodeArtifact
@@ -244,7 +245,6 @@ async function tryLogin<T>(fn: () => Promise<T>) {
 
 /**
  * Determine the starting directory for searching for plugin configuration files
- *
  * @param {Configuration} configuration - Yarn configuration
  * @returns {PortablePath} Starting directory for searching for plugin configuration files
  */

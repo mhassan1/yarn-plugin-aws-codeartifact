@@ -129,7 +129,6 @@ export const registryCommands: RegistryCommand[] = [
 
 /**
  * Given a list of positional arguments in a command, find the relevant registry command from the list
- *
  * @param {string[]} positionalArgs - Positional arguments (e.g. `['add', 'moment']` in `yarn add moment`)
  * @returns {RegistryCommand} Found registry command
  */

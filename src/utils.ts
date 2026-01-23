@@ -26,7 +26,6 @@ export const pluginRootDir: PortablePath =
  * Determine registry type for a `yarn` command
  * This is an imperfect way to check whether this command is a command that will need a registry, and which type of registry it is
  * TODO Once we have an appropriate hook, we should not need to do this
- *
  * @param {string[]} argv - CLI arguments
  * @returns {npmConfigUtils.RegistryType} Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
  */
@@ -58,7 +57,6 @@ export const getRegistryTypeForCommand = (
 
 /**
  * Check whether an array starts with a list of items
- *
  * @param {Array} array - Array of any
  * @param {Array} items - Array of any
  * @returns {boolean} Whether array starts with items
@@ -73,7 +71,6 @@ export const arrayStartsWith = (array: any[], ...items: any[]): boolean => {
 
 /**
  * Parse an AWS CodeArtifact registry URL into its parts
- *
  * @param {string} registry - AWS CodeArtifact Registry URL
  * @returns {AuthorizationTokenParams} Parameters that will be used to retrieve an AWS CodeArtifact authorization token
  */
@@ -94,7 +91,6 @@ export type AuthorizationTokenParams = {
 
 /**
  * Build plugin configuration object
- *
  * @param {PortablePath} startingCwd - Yarn configuration working directory
  * @returns {Promise<PluginConfig>} Plugin configuration
  */
@@ -152,7 +148,6 @@ type BooleanString = 'true' | 'false'
 
 /**
  * Traverse directories upwards looking for plugin configuration files (based on `Configuration.findRcFiles`)
- *
  * @param {PortablePath} startingCwd - Yarn configuration working directory
  * @returns {Promise<ConfigFile[]>} Array of configuration files in ancestor directories
  */
@@ -182,7 +177,6 @@ const findPluginConfigFiles = async (startingCwd: PortablePath): Promise<ConfigF
 
 /**
  * Look for plugin configuration file in home directory (based on `Configuration.findHomeRcFile`)
- *
  * @returns {Promise<ConfigFile | null>} Configuration file in home directory
  */
 const findHomePluginConfigFile = async (): Promise<ConfigFile | null> => {
@@ -195,7 +189,6 @@ const findHomePluginConfigFile = async (): Promise<ConfigFile | null> => {
 
 /**
  * Read a plugin configuration file, if it exists
- *
  * @param {PortablePath} folder - Folder with configuration file
  * @returns {Promise<ConfigFile | null>} Plugin configuration file
  */
@@ -219,7 +212,6 @@ type ConfigFile = {
 
 /**
  * Compute plugin registry configuration key for a registry type
- *
  * @param {npmConfigUtils.RegistryType} type - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
  * @returns {string} - Plugin registry configuration key (`npmRegistryServerConfig` or `npmPublishRegistryConfig`)
  */
@@ -229,7 +221,6 @@ export const computePluginRegistryConfigKey = (type: npmConfigUtils.RegistryType
 
 /**
  * Get default plugin registry configuration (based on logic in `npmConfigUtils.getDefaultRegistry`)
- *
  * @param {PluginConfig} pluginConfig - Plugin configuration
  * @param {npmConfigUtils.RegistryType} type - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
  * @returns {PluginRegistryConfig | null} Plugin registry configuration
@@ -247,7 +238,6 @@ export const getDefaultPluginRegistryConfig = (
 
 /**
  * Get plugin registry configuration from `npmRegistries` (based on logic in `npmConfigUtils.getRegistryConfiguration`)
- *
  * @param {string} registry - AWS CodeArtifact Registry URL
  * @param {PluginConfig} pluginConfig - Plugin configuration
  * @returns {PluginRegistryConfig | null} Plugin registry configuration
@@ -264,7 +254,6 @@ export const getPluginRegistryConfig = (registry: string, pluginConfig: PluginCo
 
 /**
  * Get scope plugin registry configuration (based on logic in `npmConfigUtils.getScopeRegistry`)
- *
  * @param {string} scope - Package scope
  * @param {PluginConfig} pluginConfig - Plugin configuration
  * @param {npmConfigUtils.RegistryType} type - Type of registry (`npmRegistryServer` or `npmPublishRegistry`)
@@ -282,7 +271,6 @@ export const getScopePluginRegistryConfig = (
 
 /**
  * Memoize an async function
- *
  * @param {() => Promise} fn - Async function
  * @param {() => string} keyFn - Cache key generation function
  * @returns {() => Promise} Memoized async function
@@ -308,7 +296,6 @@ export const memoizePromise = <T, F extends (...args: readonly any[]) => Promise
 
 /**
  * Augment a config file via an `augment` callback
- *
  * @param {Function} augment Augment function
  * @returns {Function} Map functionConfigFile
  */
