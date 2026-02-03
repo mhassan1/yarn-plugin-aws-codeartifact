@@ -17,8 +17,8 @@ import {
 import { Codeartifact } from '@aws-sdk/client-codeartifact'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import { fromEnv } from '@aws-sdk/credential-provider-env'
-import { chain } from '@aws-sdk/property-provider'
-import { Transform } from 'node:stream';
+import { chain } from '@smithy/property-provider'
+import { Transform } from 'node:stream'
 
 type TokenGenerator = (
   authorizationTokenParams: AuthorizationTokenParams,
@@ -240,14 +240,14 @@ async function tryLogin<T>(fn: () => Promise<T>) {
   const debugStream = new Transform({
     transform(chunk, encoding, callback) {
       // Pass the data through to process.stdout
-      this.push(chunk);
+      this.push(chunk)
       // `yarn install` progress bar deletes the last line which contains the login code
       // so we add a new line to the end of the output
-      this.push("\n\n")
-      callback();
+      this.push('\n\n')
+      callback()
     }
-  });
-  debugStream.pipe(process.stdout);
+  })
+  debugStream.pipe(process.stdout)
   const exitCode = await execute('aws sso login', [], { stdout: debugStream })
   if (exitCode) {
     throw error
