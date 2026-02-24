@@ -73,5 +73,8 @@
     "ts-jest": "^29.1.1",
     "typescript": "~5.1.6"
   },
+  "resolutions": {
+    "tar": "^7.5.4"
+  },
   "packageManager": "yarn@4.0.0"
 }
