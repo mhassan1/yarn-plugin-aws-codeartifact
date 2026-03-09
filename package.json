@@ -74,7 +74,7 @@
     "typescript": "~5.1.6"
   },
   "resolutions": {
-    "tar": "^7.5.4",
+    "tar": "^7.5.10",
     "fast-xml-parser": "^5.3.8"
   },
   "packageManager": "yarn@4.13.0"
