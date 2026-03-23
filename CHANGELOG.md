@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.25.3] - 2026-03-23
+[0.25.3]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.25.2...v0.25.3
+
+- Bump vulnerable dependency `fast-xml-parser`
+
 ## [0.25.2] - 2026-03-03
 [0.25.2]: https://github.com/mhassan1/yarn-plugin-aws-codeartifact/compare/v0.25.1...v0.25.2
 
